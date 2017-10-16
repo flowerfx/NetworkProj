@@ -5,12 +5,12 @@ NS_CC_BEGIN
 
 NetHttpClient::NetHttpClient()
 {
-
+	_callback = nullptr;
 }
 
 NetHttpClient::~NetHttpClient()
 {
-
+	_callback = nullptr;
 }
 
 void NetHttpClient::RequestUrl(const char * url, network::HttpRequest::Type type, bool isImmediate)
@@ -37,11 +37,17 @@ void NetHttpClient::onUpdate(float dt)
 
 }
 
+void NetHttpClient::setCallBack(const std::function<void(std::vector<char>*)> & cb)
+{
+	this->_callback = cb;
+}
+
 //Http Response Callback
 void NetHttpClient::onHttpRequestCompleted(netlib::network::HttpClient *sender, netlib::network::HttpResponse *response)
 {
 	if (!response)
 	{
+		_callback(nullptr);
 		return;
 	}
 
@@ -60,21 +66,12 @@ void NetHttpClient::onHttpRequestCompleted(netlib::network::HttpClient *sender, 
 	{
 		log("[NetHttpClient] : response failed");
 		log("[NetHttpClient] : error buffer: %s", response->getErrorBuffer());
+		_callback(nullptr);
 		return;
 	}
 
 	// dump data
-	std::vector<char> *buffer = response->getResponseData();
-	log("[NetHttpClient] :  dump data: ");
-	for (unsigned int i = 0; i < buffer->size(); i++)
-	{
-		log("%c", (*buffer)[i]);
-	}
-	log("\n");
-	if (response->getHttpRequest()->getReferenceCount() != 2)
-	{
-		log("request ref count not 2, is %d", response->getHttpRequest()->getReferenceCount());
-	}
+	_callback(response->getResponseData());
 }
 
 

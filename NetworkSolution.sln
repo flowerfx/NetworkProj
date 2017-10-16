@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpClient", "HttpClient\HttpClient.vcxproj", "{2EF6A176-734A-4ABB-9157-60A9D411141E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkLib", "ExternalLib\NetworkLib.vcxproj", "{30497B25-02AC-4C61-9797-F7F3BCFABC7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{2EF6A176-734A-4ABB-9157-60A9D411141E}.Release|x64.Build.0 = Release|x64
 		{2EF6A176-734A-4ABB-9157-60A9D411141E}.Release|x86.ActiveCfg = Release|Win32
 		{2EF6A176-734A-4ABB-9157-60A9D411141E}.Release|x86.Build.0 = Release|Win32
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Debug|x64.ActiveCfg = Debug|x64
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Debug|x64.Build.0 = Debug|x64
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Debug|x86.ActiveCfg = Debug|Win32
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Debug|x86.Build.0 = Debug|Win32
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Release|x64.ActiveCfg = Release|x64
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Release|x64.Build.0 = Release|x64
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Release|x86.ActiveCfg = Release|Win32
+		{30497B25-02AC-4C61-9797-F7F3BCFABC7D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

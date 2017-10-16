@@ -15,6 +15,7 @@ NS_CC_BEGIN
 
 class CC_DLL NetHttpClient : public netlib::Ref
 {
+	std::function<void(std::vector<char>*)> _callback;
 public:
 	NetHttpClient();
 	virtual ~NetHttpClient();
@@ -25,6 +26,9 @@ public:
 
 	//Http Response Callback
 	void onHttpRequestCompleted(netlib::network::HttpClient *sender, netlib::network::HttpResponse *response);
+
+	//set call back when have httppRequest
+	void setCallBack(const std::function<void(std::vector<char>*)> & cb);
 
 private:
 

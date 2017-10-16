@@ -87,11 +87,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);FW_PC</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLib\;$(SolutionDir)HttpClient\;$(SolutionDir)ExternalLib\network\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -100,7 +102,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);CC_TARGET_PLATFORM=CC_PLATFORM_WIN32;CC_TARGET_PLATFORM=3;FW_PC</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLib\;$(SolutionDir)HttpClient\;$(SolutionDir)ExternalLib\network\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,7 +118,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);CC_TARGET_PLATFORM=CC_PLATFORM_WIN32;CC_TARGET_PLATFORM=3;FW_PC</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLib\;$(SolutionDir)HttpClient\;$(SolutionDir)ExternalLib\network\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +136,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);CC_TARGET_PLATFORM=CC_PLATFORM_WIN32;CC_TARGET_PLATFORM=3;FW_PC</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLib\;$(SolutionDir)HttpClient\;$(SolutionDir)ExternalLib\network\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +156,11 @@
   <ItemGroup>
     <ClCompile Include="HttpClient.cpp" />
     <ClCompile Include="stdafx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExternalLib\NetworkLib.vcxproj">
+      <Project>{30497b25-02ac-4c61-9797-f7f3bcfabc7d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

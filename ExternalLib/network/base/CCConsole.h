@@ -229,6 +229,6 @@ private:
 };
 
 NS_CC_END
-
+#define LOG(x) netlib::log(x)
 /// @endcond
 #endif /* defined(__CCCONSOLE_H__) */
