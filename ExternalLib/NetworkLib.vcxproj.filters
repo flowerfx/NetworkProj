@@ -1,0 +1,436 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="network">
+      <UniqueIdentifier>{cb9bae56-d2bb-4df1-a5fe-642eb8fe90ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\base">
+      <UniqueIdentifier>{c1d4e986-97ce-4ddb-9d0f-f768c25ee600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\platform">
+      <UniqueIdentifier>{0cecbf87-5339-49cf-9234-315bb423ed6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\base\allocator">
+      <UniqueIdentifier>{2f0bcd9b-69c4-478f-a651-5d6575731a74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\math">
+      <UniqueIdentifier>{620370f4-04b8-4540-9af2-f3cf2ebcd749}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\network">
+      <UniqueIdentifier>{09b49175-804b-4d04-8c7e-f3e8eebe9bf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\network\include">
+      <UniqueIdentifier>{57dd49ce-c69a-401e-9fdd-7dd265d02e85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\network\source">
+      <UniqueIdentifier>{15a8e5de-a925-4d63-af87-6eea23cc1c92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\platform\win32">
+      <UniqueIdentifier>{b006cfda-98b9-43ed-aa3e-e719eb477060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\platform\win32\compat">
+      <UniqueIdentifier>{0cc31948-d8be-462b-8cdd-8814b42c168c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\convertUTF">
+      <UniqueIdentifier>{8015955a-72b4-4e44-b436-771e49c595a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\unzip">
+      <UniqueIdentifier>{01366b3d-527e-4205-9343-9d451a6477f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\unzip\tinyxml2">
+      <UniqueIdentifier>{0091d13e-38e4-4539-8904-852de87077c1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="network\base\ccConfig.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCRef.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCRefPtr.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCScheduler.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccTypes.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccUTF8.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\uthash.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\utlist.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccCArray.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCStdC.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCThread.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCFileUtils.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCPlatformConfig.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCPlatformDefine.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCPlatformMacros.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\CCSAXParser.h">
+      <Filter>network\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCMap.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCVector.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccMacros.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCConsole.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorGlobal.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorMacros.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorMutex.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyDefault.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyFixedBlock.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyGlobalSmallBlock.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyPool.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorBase.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\allocator\CCAllocatorDiagnostics.h">
+      <Filter>network\base\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\base64.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCConfiguration.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkMgr.h" />
+    <ClInclude Include="network\base\CCAutoreleasePool.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCAsyncTaskPool.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCValue.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\CCVertex.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\Mat4.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\MathUtil.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\Quaternion.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\TransformUtils.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\Vec2.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\Vec3.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\Vec4.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\CCAffineTransform.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\CCGeometry.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\CCMath.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\math\CCMathBase.h">
+      <Filter>network\math</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccUtils.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\ccRandom.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\CCIDownloaderImpl.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\CCDownloader.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\CCDownloader-curl.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\Uri.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\WebSocket.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\HttpClient.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\HttpRequest.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\HttpResponse.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\network\SocketIO.h">
+      <Filter>network\network\include</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\win32\CCFileUtils-win32.h">
+      <Filter>network\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\win32\CCPlatformDefine-win32.h">
+      <Filter>network\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\win32\CCStdC-win32.h">
+      <Filter>network\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\win32\CCUtils-win32.h">
+      <Filter>network\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="network\platform\win32\inet_pton_mingw.h">
+      <Filter>network\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\chien.truong\Downloads\cocos2d-x-3.15\cocos2d-x-3.15\cocos\platform\win32\compat\stdint.h">
+      <Filter>network\platform\win32\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="network\base\CCData.h">
+      <Filter>network\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ConvertUTF\ConvertUTF.h">
+      <Filter>network\convertUTF</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2\tinyxml2.h">
+      <Filter>network\unzip\tinyxml2</Filter>
+    </ClInclude>
+    <ClInclude Include="unzip\crypt.h">
+      <Filter>network\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="unzip\ioapi.h">
+      <Filter>network\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="unzip\ioapi_mem.h">
+      <Filter>network\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="unzip\unzip.h">
+      <Filter>network\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketClient.h" />
+    <ClInclude Include="NetHttpClient.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="network\base\CCScheduler.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\ccTypes.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\ccUTF8.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\ccCArray.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\CCThread.cpp">
+      <Filter>network\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\CCFileUtils.cpp">
+      <Filter>network\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\CCSAXParser.cpp">
+      <Filter>network\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\CCConsole.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\allocator\CCAllocatorGlobal.cpp">
+      <Filter>network\base\allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\allocator\CCAllocatorGlobalNewDelete.cpp">
+      <Filter>network\base\allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\allocator\CCAllocatorDiagnostics.cpp">
+      <Filter>network\base\allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\base64.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\CCConfiguration.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkMgr.cpp" />
+    <ClCompile Include="network\base\CCAutoreleasePool.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\CCAsyncTaskPool.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\CCValue.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\CCVertex.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\Mat4.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\MathUtil.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\Quaternion.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\TransformUtils.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\Vec2.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\Vec3.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\Vec4.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\CCAffineTransform.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\math\CCGeometry.cpp">
+      <Filter>network\math</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\ccUtils.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\ccRandom.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\Uri.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\WebSocket.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\CCDownloader.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\CCDownloader-curl.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\HttpClient.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\network\SocketIO.cpp">
+      <Filter>network\network\source</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\win32\CCStdC-win32.cpp">
+      <Filter>network\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\win32\CCUtils-win32.cpp">
+      <Filter>network\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\win32\inet_pton_mingw.cpp">
+      <Filter>network\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="network\platform\win32\CCFileUtils-win32.cpp">
+      <Filter>network\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="network\base\CCData.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="ConvertUTF\ConvertUTF.c">
+      <Filter>network\convertUTF</Filter>
+    </ClCompile>
+    <ClCompile Include="ConvertUTF\ConvertUTFWrapper.cpp">
+      <Filter>network\convertUTF</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2\tinyxml2.cpp">
+      <Filter>network\unzip\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="unzip\ioapi.cpp">
+      <Filter>network\unzip</Filter>
+    </ClCompile>
+    <ClCompile Include="unzip\ioapi_mem.cpp">
+      <Filter>network\unzip</Filter>
+    </ClCompile>
+    <ClCompile Include="unzip\unzip.cpp">
+      <Filter>network\unzip</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketClient.cpp" />
+    <ClCompile Include="network\base\CCRef.cpp">
+      <Filter>network\base</Filter>
+    </ClCompile>
+    <ClCompile Include="NetHttpClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="network\math\CMakeLists.txt">
+      <Filter>network\math</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="network\math\Mat4.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\MathUtil.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\MathUtilNeon.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\MathUtilNeon64.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\MathUtilSSE.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\Quaternion.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\Vec2.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\Vec3.inl">
+      <Filter>network\math</Filter>
+    </None>
+    <None Include="network\math\Vec4.inl">
+      <Filter>network\math</Filter>
+    </None>
+  </ItemGroup>
+</Project>

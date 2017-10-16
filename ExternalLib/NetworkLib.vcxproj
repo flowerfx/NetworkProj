@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\chien.truong\Downloads\cocos2d-x-3.15\cocos2d-x-3.15\cocos\platform\win32\compat\stdint.h" />
+    <ClInclude Include="ConvertUTF\ConvertUTF.h" />
+    <ClInclude Include="NetHttpClient.h" />
+    <ClInclude Include="NetworkMgr.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorBase.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorDiagnostics.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorGlobal.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorMacros.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorMutex.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyDefault.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyFixedBlock.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyGlobalSmallBlock.h" />
+    <ClInclude Include="network\base\allocator\CCAllocatorStrategyPool.h" />
+    <ClInclude Include="network\base\base64.h" />
+    <ClInclude Include="network\base\CCAsyncTaskPool.h" />
+    <ClInclude Include="network\base\CCAutoreleasePool.h" />
+    <ClInclude Include="network\base\ccCArray.h" />
+    <ClInclude Include="network\base\ccConfig.h" />
+    <ClInclude Include="network\base\CCConfiguration.h" />
+    <ClInclude Include="network\base\CCConsole.h" />
+    <ClInclude Include="network\base\CCData.h" />
+    <ClInclude Include="network\base\ccMacros.h" />
+    <ClInclude Include="network\base\CCMap.h" />
+    <ClInclude Include="network\base\ccRandom.h" />
+    <ClInclude Include="network\base\CCRef.h" />
+    <ClInclude Include="network\base\CCRefPtr.h" />
+    <ClInclude Include="network\base\CCScheduler.h" />
+    <ClInclude Include="network\base\ccTypes.h" />
+    <ClInclude Include="network\base\ccUTF8.h" />
+    <ClInclude Include="network\base\ccUtils.h" />
+    <ClInclude Include="network\base\CCValue.h" />
+    <ClInclude Include="network\base\CCVector.h" />
+    <ClInclude Include="network\base\uthash.h" />
+    <ClInclude Include="network\base\utlist.h" />
+    <ClInclude Include="network\math\CCAffineTransform.h" />
+    <ClInclude Include="network\math\CCGeometry.h" />
+    <ClInclude Include="network\math\CCMath.h" />
+    <ClInclude Include="network\math\CCMathBase.h" />
+    <ClInclude Include="network\math\CCVertex.h" />
+    <ClInclude Include="network\math\Mat4.h" />
+    <ClInclude Include="network\math\MathUtil.h" />
+    <ClInclude Include="network\math\Quaternion.h" />
+    <ClInclude Include="network\math\TransformUtils.h" />
+    <ClInclude Include="network\math\Vec2.h" />
+    <ClInclude Include="network\math\Vec3.h" />
+    <ClInclude Include="network\math\Vec4.h" />
+    <ClInclude Include="network\network\CCDownloader-curl.h" />
+    <ClInclude Include="network\network\CCDownloader.h" />
+    <ClInclude Include="network\network\CCIDownloaderImpl.h" />
+    <ClInclude Include="network\network\HttpClient.h" />
+    <ClInclude Include="network\network\HttpRequest.h" />
+    <ClInclude Include="network\network\HttpResponse.h" />
+    <ClInclude Include="network\network\SocketIO.h" />
+    <ClInclude Include="network\network\Uri.h" />
+    <ClInclude Include="network\network\WebSocket.h" />
+    <ClInclude Include="network\platform\CCFileUtils.h" />
+    <ClInclude Include="network\platform\CCPlatformConfig.h" />
+    <ClInclude Include="network\platform\CCPlatformDefine.h" />
+    <ClInclude Include="network\platform\CCPlatformMacros.h" />
+    <ClInclude Include="network\platform\CCSAXParser.h" />
+    <ClInclude Include="network\platform\CCStdC.h" />
+    <ClInclude Include="network\platform\CCThread.h" />
+    <ClInclude Include="network\platform\win32\CCFileUtils-win32.h" />
+    <ClInclude Include="network\platform\win32\CCPlatformDefine-win32.h" />
+    <ClInclude Include="network\platform\win32\CCStdC-win32.h" />
+    <ClInclude Include="network\platform\win32\CCUtils-win32.h" />
+    <ClInclude Include="network\platform\win32\inet_pton_mingw.h" />
+    <ClInclude Include="SocketClient.h" />
+    <ClInclude Include="tinyxml2\tinyxml2.h" />
+    <ClInclude Include="unzip\crypt.h" />
+    <ClInclude Include="unzip\ioapi.h" />
+    <ClInclude Include="unzip\ioapi_mem.h" />
+    <ClInclude Include="unzip\unzip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ConvertUTF\ConvertUTF.c" />
+    <ClCompile Include="ConvertUTF\ConvertUTFWrapper.cpp" />
+    <ClCompile Include="NetHttpClient.cpp" />
+    <ClCompile Include="NetworkMgr.cpp" />
+    <ClCompile Include="network\base\allocator\CCAllocatorDiagnostics.cpp" />
+    <ClCompile Include="network\base\allocator\CCAllocatorGlobal.cpp" />
+    <ClCompile Include="network\base\allocator\CCAllocatorGlobalNewDelete.cpp" />
+    <ClCompile Include="network\base\base64.cpp" />
+    <ClCompile Include="network\base\CCAsyncTaskPool.cpp" />
+    <ClCompile Include="network\base\CCAutoreleasePool.cpp" />
+    <ClCompile Include="network\base\ccCArray.cpp" />
+    <ClCompile Include="network\base\CCConfiguration.cpp" />
+    <ClCompile Include="network\base\CCConsole.cpp" />
+    <ClCompile Include="network\base\CCData.cpp" />
+    <ClCompile Include="network\base\ccRandom.cpp" />
+    <ClCompile Include="network\base\CCRef.cpp" />
+    <ClCompile Include="network\base\CCScheduler.cpp" />
+    <ClCompile Include="network\base\ccTypes.cpp" />
+    <ClCompile Include="network\base\ccUTF8.cpp" />
+    <ClCompile Include="network\base\ccUtils.cpp" />
+    <ClCompile Include="network\base\CCValue.cpp" />
+    <ClCompile Include="network\math\CCAffineTransform.cpp" />
+    <ClCompile Include="network\math\CCGeometry.cpp" />
+    <ClCompile Include="network\math\CCVertex.cpp" />
+    <ClCompile Include="network\math\Mat4.cpp" />
+    <ClCompile Include="network\math\MathUtil.cpp" />
+    <ClCompile Include="network\math\Quaternion.cpp" />
+    <ClCompile Include="network\math\TransformUtils.cpp" />
+    <ClCompile Include="network\math\Vec2.cpp" />
+    <ClCompile Include="network\math\Vec3.cpp" />
+    <ClCompile Include="network\math\Vec4.cpp" />
+    <ClCompile Include="network\network\CCDownloader-curl.cpp" />
+    <ClCompile Include="network\network\CCDownloader.cpp" />
+    <ClCompile Include="network\network\HttpClient.cpp" />
+    <ClCompile Include="network\network\SocketIO.cpp" />
+    <ClCompile Include="network\network\Uri.cpp" />
+    <ClCompile Include="network\network\WebSocket.cpp" />
+    <ClCompile Include="network\platform\CCFileUtils.cpp" />
+    <ClCompile Include="network\platform\CCSAXParser.cpp" />
+    <ClCompile Include="network\platform\CCThread.cpp" />
+    <ClCompile Include="network\platform\win32\CCFileUtils-win32.cpp" />
+    <ClCompile Include="network\platform\win32\CCStdC-win32.cpp" />
+    <ClCompile Include="network\platform\win32\CCUtils-win32.cpp" />
+    <ClCompile Include="network\platform\win32\inet_pton_mingw.cpp" />
+    <ClCompile Include="SocketClient.cpp" />
+    <ClCompile Include="tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="unzip\ioapi.cpp" />
+    <ClCompile Include="unzip\ioapi_mem.cpp" />
+    <ClCompile Include="unzip\unzip.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="network\math\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="network\math\Mat4.inl" />
+    <None Include="network\math\MathUtil.inl" />
+    <None Include="network\math\MathUtilNeon.inl" />
+    <None Include="network\math\MathUtilNeon64.inl" />
+    <None Include="network\math\MathUtilSSE.inl" />
+    <None Include="network\math\Quaternion.inl" />
+    <None Include="network\math\Vec2.inl" />
+    <None Include="network\math\Vec3.inl" />
+    <None Include="network\math\Vec4.inl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{30497B25-02AC-4C61-9797-F7F3BCFABC7D}</ProjectGuid>
+    <RootNamespace>NetworkLib</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)</TargetName>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>FW_PC;WIN32;_USRDLL;_WINDOWS;_LIB;LWS_DLL;COCOS2DXWIN32_EXPORTS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_USE3DDLL;_EXPORT_DLL_;_USRSTUDIODLL;_USREXDLL;_USEGUIDLL;NETLIB_DEBUG=1;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(projectDir)curl\include\win32\;$(projectDir)websockets\include\win32\;$(projectDir)network\;$(projectDir);$(projectDir)zlib\include\win32;$(projectDir)openssl\include\win32\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)curl/prebuilt/win32;$(ProjectDir)openssl/prebuilt/win32;$(ProjectDir)webp/prebuilt/win32;$(ProjectDir)websockets/prebuilt/win32;$(ProjectDir)zlib/prebuilt/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libzlib.lib;websockets.lib;libwebp.lib;libcrypto.lib;libssl.lib;libcurl.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_d.dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(ProjectDir)lib\$(ProjectName)_d.lib</OutputFile>
+    </Lib>
+    <PreLinkEvent>
+      <Command>not exist "$(OutDir)" mkdir "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)websockets\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)zlib\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)openssl\prebuilt\win32\*.*" "$(OutDir)"</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>FW_PC;WIN32;_USRDLL;_WINDOWS;_LIB;LWS_DLL;COCOS2DXWIN32_EXPORTS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_USE3DDLL;_EXPORT_DLL_;_USRSTUDIODLL;_USREXDLL;_USEGUIDLL;NETLIB_DEBUG=1;CC_STATIC;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(projectDir)curl\include\win32\;$(projectDir)websockets\include\win32\;$(projectDir)network\;$(projectDir);$(projectDir)zlib\include\win32;$(projectDir)openssl\include\win32\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)curl/prebuilt/win32;$(ProjectDir)openssl/prebuilt/win32;$(ProjectDir)webp/prebuilt/win32;$(ProjectDir)websockets/prebuilt/win32;$(ProjectDir)zlib/prebuilt/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libzlib.lib;websockets.lib;libwebp.lib;libcrypto.lib;libssl.lib;libcurl.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(ProjectDir)lib\$(ProjectName)_d.lib</OutputFile>
+    </Lib>
+    <PreLinkEvent>
+      <Command>not exist "$(OutDir)" mkdir "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)websockets\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)zlib\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)openssl\prebuilt\win32\*.*" "$(OutDir)"</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>FW_PC;WIN32;_USRDLL;_WINDOWS;_LIB;LWS_DLL;COCOS2DXWIN32_EXPORTS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_USE3DDLL;_EXPORT_DLL_;_USRSTUDIODLL;_USREXDLL;_USEGUIDLL;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(projectDir)curl\include\win32\;$(projectDir)websockets\include\win32\;$(projectDir)network\;$(projectDir);$(projectDir)zlib\include\win32;$(projectDir)openssl\include\win32\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)curl/prebuilt/win32;$(ProjectDir)openssl/prebuilt/win32;$(ProjectDir)webp/prebuilt/win32;$(ProjectDir)websockets/prebuilt/win32;$(ProjectDir)zlib/prebuilt/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libzlib.lib;websockets.lib;libwebp.lib;libcrypto.lib;libssl.lib;libcurl.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+    </Link>
+    <Lib>
+      <OutputFile>$(ProjectDir)lib\$(ProjectName).lib</OutputFile>
+    </Lib>
+    <PreLinkEvent>
+      <Command>not exist "$(OutDir)" mkdir "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)websockets\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)zlib\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)openssl\prebuilt\win32\*.*" "$(OutDir)"</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>FW_PC;WIN32;_USRDLL;_WINDOWS;_LIB;LWS_DLL;COCOS2DXWIN32_EXPORTS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_USE3DDLL;_EXPORT_DLL_;_USRSTUDIODLL;_USREXDLL;_USEGUIDLL;CC_STATIC;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(projectDir)curl\include\win32\;$(projectDir)websockets\include\win32\;$(projectDir)network\;$(projectDir);$(projectDir)zlib\include\win32;$(projectDir)openssl\include\win32\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)curl/prebuilt/win32;$(ProjectDir)openssl/prebuilt/win32;$(ProjectDir)webp/prebuilt/win32;$(ProjectDir)websockets/prebuilt/win32;$(ProjectDir)zlib/prebuilt/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libzlib.lib;websockets.lib;libwebp.lib;libcrypto.lib;libssl.lib;libcurl.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+    </Link>
+    <Lib>
+      <OutputFile>$(ProjectDir)lib\$(ProjectName).lib</OutputFile>
+    </Lib>
+    <PreLinkEvent>
+      <Command>not exist "$(OutDir)" mkdir "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)websockets\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)zlib\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)openssl\prebuilt\win32\*.*" "$(OutDir)"</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
