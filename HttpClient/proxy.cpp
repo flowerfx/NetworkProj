@@ -21,6 +21,11 @@
 
 using namespace std;
 
+void appExit(int d)
+{
+	exit(d);
+}
+
 
 char* convert_Request_to_string(struct ParsedRequest *req)
 {
@@ -37,7 +42,7 @@ char* convert_Request_to_string(struct ParsedRequest *req)
 
 	if (headersBuf == NULL) {
 		fprintf (stderr," Error in memory allocation  of headersBuffer ! \n");
-		exit (1);
+		appExit(1);
 	}
 
 
@@ -53,7 +58,7 @@ char* convert_Request_to_string(struct ParsedRequest *req)
 
 	if(serverReq == NULL){
 		fprintf (stderr," Error in memory allocation for serverrequest ! \n");
-		exit (1);
+		appExit(1);
 	}
 
 	serverReq[0] = '\0';
@@ -83,17 +88,17 @@ int createserverSocket(char *pcAddress, char *pcPort) {
   ahints.ai_socktype = SOCK_STREAM;
   if (getaddrinfo(pcAddress, pcPort, &ahints, &paRes) != 0) {
    		fprintf (stderr," Error in server address format ! \n");
-		exit (1);
+		return -1;
   }
 
   /* Create and connect */
   if ((iSockfd = socket(paRes->ai_family, paRes->ai_socktype, paRes->ai_protocol)) < 0) {
     	fprintf (stderr," Error in creating socket to server ! \n");
-		exit (1);
+		return -1;
   }
   if (connect(iSockfd, paRes->ai_addr, paRes->ai_addrlen) < 0) {
     	fprintf (stderr," Error in connecting to server ! \n");
-		exit (1);
+		return -1;
 	}
 
   /* Free paRes, which was dynamically allocated by getaddrinfo */
@@ -116,7 +121,7 @@ void writeToserverSocket(const char* buff_to_server,int sockfd,int buff_length)
 	while (totalsent < buff_length) {
 		if ((senteach = send(sockfd, (const char *) (buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
 			fprintf (stderr," Error in sending to server ! \n");
-				exit (1);
+			appExit(1);
 		}
 		totalsent += senteach;
 
@@ -138,7 +143,7 @@ void writeToclientSocket(const char* buff_to_server,int sockfd,int buff_length)
 	while (totalsent < buff_length) {
 		if ((senteach = send(sockfd, (const char *) (buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
 			fprintf (stderr," Error in sending to server ! \n");
-				exit (1);
+			appExit(1);
 		}
 		totalsent += senteach;
 
@@ -146,7 +151,7 @@ void writeToclientSocket(const char* buff_to_server,int sockfd,int buff_length)
 
 }
 
-#define MAX_BUF_SIZE  5000
+#define MAX_BUF_SIZE  50000
 
 void writeToClient (int Clientfd, int Serverfd) {
 
@@ -162,7 +167,7 @@ void writeToClient (int Clientfd, int Serverfd) {
 	/* Error handling */
 	if (iRecv < 0) {
 		fprintf (stderr,"Yo..!! Error while recieving from server ! \n");
-	  exit (1);
+		appExit(1);
 	}
 }
 
@@ -180,7 +185,7 @@ void* datafromclient(void* sockid)
 
 	if (request_message == NULL) {
 		fprintf (stderr," Error in memory allocation ! \n");
-		exit (1);
+		appExit(1);
 	}	
 
 	request_message[0] = '\0';
@@ -193,7 +198,7 @@ void* datafromclient(void* sockid)
 
 	  if(recvd < 0 ){
 	  	fprintf (stderr," Error while recieving ! \n");
-		exit (1);
+		appExit(1);
 	  				
 	  }else if(recvd == 0) {
 	  		break;
@@ -209,7 +214,7 @@ void* datafromclient(void* sockid)
 			request_message = (char *) realloc(request_message, maxbuff);
 			if (request_message == NULL) {
 				fprintf (stderr," Error in memory re-allocation ! \n");
-				exit (1);
+				appExit(1);
 			}
 		}
 
@@ -220,13 +225,19 @@ void* datafromclient(void* sockid)
 
 	}
 
+	if (strlen(request_message) <= 0)
+	{
+		fprintf(stderr, "request_message zero \n");
+		return NULL;
+	}
+
 	struct ParsedRequest *req;    // contains parsed request
 
 	req = ParsedRequest_create();
 
 	if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {		
 		fprintf (stderr,"Error in request message..only http and get with headers are allowed ! \n");
-		exit(0);
+		appExit(0);
 	}
 
 	if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
@@ -247,20 +258,21 @@ void* datafromclient(void* sockid)
 	//char iiitport[] = "8080";
 	
 	// iServerfd = createserverSocket(iiitproxy, iiitport);
+	if (iServerfd < 0)
+	{
+		ParsedRequest_destroy(req);
+		closesocket(newsockfd);   // close the sockets
 
+		return NULL;
+	}
 	writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
 	writeToClient(newsockfd, iServerfd);
 
 
-	ParsedRequest_destroy(req);
-		
-	closesocket(newsockfd);   // close the sockets
 	closesocket(iServerfd);
 
 	//  Doesn't make any sense ..as to send something
-	int y = 3;
-	int *p = &y;
-	return p;
+	return NULL;
 
 }
 
@@ -308,27 +320,31 @@ int main_proxy(int port)
 
   	int clilen = sizeof(struct sockaddr);
 
-
+	int previous_sockid = 0;
   	while(1) {
   		
   		/* A browser request starts here */
 
   		newsockfd = accept(sockfd,&cli_addr, (socklen_t*) &clilen); 
+		if (previous_sockid != newsockfd)
+		{
+			previous_sockid = newsockfd;
+			if (newsockfd < 0) {
+				fprintf(stderr, "ERROR! On Accepting Request ! i.e requests limit crossed \n");
+			}
+			int pid = 0;
+			//int pid = fork();
 
-  		if (newsockfd <0){
-  			fprintf(stderr, "ERROR! On Accepting Request ! i.e requests limit crossed \n");
- 		}
-		int pid = 0;
- 		//int pid = fork();
+			if (pid == 0) {
 
- 		if(pid == 0){
-
- 			datafromclient((void*)&newsockfd);
-			closesocket(newsockfd);
- 			_exit(0);
- 		}else{
-			closesocket(newsockfd);     // pid =1 parent process
- 		}
+				datafromclient((void*)&newsockfd);
+				//closesocket(newsockfd);
+				//_exit(0);
+			}
+			else {
+				closesocket(newsockfd);     // pid =1 parent process
+			}
+		}
 
  	}
 

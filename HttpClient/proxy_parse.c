@@ -406,7 +406,11 @@ extern "C" {
 			parse->buf = NULL;
 			return -1;
 		}
-		if (strcmp(parse->method, "GET")) {
+		if (strcmp(parse->method, "GET") != 0 && 
+			strcmp(parse->method, "CONNECT") != 0 &&
+			strcmp(parse->method, "POST") != 0 
+			) 
+		{
 			debug("invalid request line, method not 'GET': %s\n",
 				parse->method);
 			free(tmp_buf);
