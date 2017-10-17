@@ -266,11 +266,20 @@ void* datafromclient(void* sockid)
 
 int main_proxy(int port) 
 {
-
+	int iResult;
+	WSADATA wsaData;
 	int sockfd,newsockfd;
 
 	struct sockaddr_in serv_addr; 
 	struct sockaddr cli_addr;
+
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		printf("WSAStartup failed with error: %d\n", iResult);
+		return 1;
+	}
+
 
 
   	sockfd = socket(AF_INET, SOCK_STREAM, 0);   // create a socket
