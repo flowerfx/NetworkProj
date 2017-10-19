@@ -1,4 +1,7 @@
 //#include <bits/stdc++.h>
+#include <thread>
+#include <vector>
+//#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -16,10 +19,10 @@
 #include "winsock.h"
 #include "windows.h"
 #include "Ws2tcpip.h"
-
 #include "proxy_parse.h"
 
-using namespace std;
+
+
 
 void appExit(int d)
 {
@@ -121,7 +124,8 @@ void writeToserverSocket(const char* buff_to_server,int sockfd,int buff_length)
 	while (totalsent < buff_length) {
 		if ((senteach = send(sockfd, (const char *) (buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
 			fprintf (stderr," Error in sending to server ! \n");
-			appExit(1);
+			//appExit(1);
+			return;
 		}
 		totalsent += senteach;
 
@@ -132,7 +136,7 @@ void writeToserverSocket(const char* buff_to_server,int sockfd,int buff_length)
 void writeToclientSocket(const char* buff_to_server,int sockfd,int buff_length)
 {
 
-	string temp;
+	std::string temp;
 
 	temp.append(buff_to_server);
 
@@ -153,6 +157,26 @@ void writeToclientSocket(const char* buff_to_server,int sockfd,int buff_length)
 
 #define MAX_BUF_SIZE  50000
 
+void sendRequestToServer(int Clientfd, int Serverfd, struct ParsedRequest *req)
+{
+	int iRecv;
+	char buf[MAX_BUF_SIZE];
+
+	while (true) {
+		iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0);
+		if (iRecv >= 0)
+		{
+			std::string buff;
+			buff.append("HTTP/1.1 200 Connection Established\nProxy-agent: Qchien-Proxy/1.1");
+			//buff.append(req->path);
+			writeToclientSocket(buff.c_str(), Clientfd, buff.size());
+			memset(buf, 0, sizeof buf);
+			break;
+		}
+	}
+
+}
+
 void writeToClient (int Clientfd, int Serverfd) {
 
 	int iRecv;
@@ -167,7 +191,7 @@ void writeToClient (int Clientfd, int Serverfd) {
 	/* Error handling */
 	if (iRecv < 0) {
 		fprintf (stderr,"Yo..!! Error while recieving from server ! \n");
-		appExit(1);
+		//appExit(1);
 	}
 }
 
@@ -227,16 +251,19 @@ void* datafromclient(void* sockid)
 
 	if (strlen(request_message) <= 0)
 	{
-		fprintf(stderr, "request_message zero \n");
+		fprintf(stderr, "ERROR : request_message zero \n");
 		return NULL;
 	}
+
+	fprintf(stdout, "request message from client \n");
+	fprintf(stdout, request_message);
 
 	struct ParsedRequest *req;    // contains parsed request
 
 	req = ParsedRequest_create();
 
 	if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {		
-		fprintf (stderr,"Error in request message..only http and get with headers are allowed ! \n");
+		fprintf (stderr,"Error in request message..\n");
 		appExit(0);
 	}
 
@@ -265,22 +292,52 @@ void* datafromclient(void* sockid)
 
 		return NULL;
 	}
-	writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
-	writeToClient(newsockfd, iServerfd);
 
+	if (strcmp(req->method, "CONNECT") == 0)
+	{
+		writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
+		sendRequestToServer(newsockfd, iServerfd, req);
+	}
+	else
+	{
+		writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
+		writeToClient(newsockfd, iServerfd);
 
+	}
 	closesocket(iServerfd);
+
 
 	//  Doesn't make any sense ..as to send something
 	return NULL;
 
 }
 
+
+void handleRequestThread(int sockfd, struct sockaddr & cli_addr)
+{
+	/* A browser request starts here */
+	int clilen = sizeof(struct sockaddr);
+	int newsockfd;
+	newsockfd = accept(sockfd, &cli_addr, (socklen_t*)&clilen);
+	if (newsockfd < 0) {
+		fprintf(stderr, "ERROR! On Accepting Request ! i.e requests limit crossed \n");
+	}
+	int pid = 0;
+	//int pid = fork();
+	if (pid == 0) {
+		datafromclient((void*)&newsockfd);
+		closesocket(newsockfd);
+	}
+	else {
+		closesocket(newsockfd);     // pid =1 parent process
+	}
+}
+
 int main_proxy(int port) 
 {
 	int iResult;
 	WSADATA wsaData;
-	int sockfd,newsockfd;
+	int sockfd, newsockfd;
 
 	struct sockaddr_in serv_addr; 
 	struct sockaddr cli_addr;
@@ -318,35 +375,20 @@ int main_proxy(int port)
   	
   	listen(sockfd, 100);  // can have maximum of 100 browser requests
 
-  	int clilen = sizeof(struct sockaddr);
 
-	int previous_sockid = 0;
+	int maximum_request = 16;
+	std::thread th[16];
   	while(1) {
-  		
-  		/* A browser request starts here */
-
-  		newsockfd = accept(sockfd,&cli_addr, (socklen_t*) &clilen); 
-		if (previous_sockid != newsockfd)
+		for (int i = 0; i < maximum_request; i++)
 		{
-			previous_sockid = newsockfd;
-			if (newsockfd < 0) {
-				fprintf(stderr, "ERROR! On Accepting Request ! i.e requests limit crossed \n");
-			}
-			int pid = 0;
-			//int pid = fork();
-
-			if (pid == 0) {
-
-				datafromclient((void*)&newsockfd);
-				//closesocket(newsockfd);
-				//_exit(0);
-			}
-			else {
-				closesocket(newsockfd);     // pid =1 parent process
-			}
+			th[i] = std::thread(handleRequestThread, sockfd, cli_addr);
 		}
 
- 	}
+		for (int i = 0; i < maximum_request; ++i) {
+			th[i].join();	
+		}
+  		
+	}
 
 	closesocket(sockfd);
 

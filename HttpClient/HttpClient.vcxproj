@@ -150,14 +150,32 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="proxy_parse.h" />
+    <ClInclude Include="Core\Core.h" />
+    <ClInclude Include="Core\CoreMacros.h" />
+    <ClInclude Include="Core\Heap\Heap.h" />
+    <ClInclude Include="Core\Thread\CoreThread.h" />
+    <ClInclude Include="Core\Thread\Interlock.h" />
+    <ClInclude Include="Core\Thread\Thread.h" />
+    <ClInclude Include="Core\Thread\Timer.h" />
+    <ClInclude Include="Network\ClientMessage.h" />
+    <ClInclude Include="Network\NetworkMacros.h" />
+    <ClInclude Include="Network\ProxyServer.h" />
+    <ClInclude Include="Network\Proxy\proxy_parse.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Core.cpp" />
+    <ClCompile Include="Core\CoreMacros.cpp" />
+    <ClCompile Include="Core\Heap\Heap.cpp" />
+    <ClCompile Include="Core\Thread\CoreThread.cpp" />
+    <ClCompile Include="Core\Thread\Win32\ThreadW32.cpp" />
+    <ClCompile Include="Core\Thread\Win32\TimerW32.cpp" />
     <ClCompile Include="HttpClient.cpp" />
+    <ClCompile Include="Network\ClientMessage.cpp" />
+    <ClCompile Include="Network\ProxyServer.cpp" />
+    <ClCompile Include="Network\Proxy\proxy_parse.c" />
     <ClCompile Include="proxy.cpp" />
-    <ClCompile Include="proxy_parse.c" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>

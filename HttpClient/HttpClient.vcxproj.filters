@@ -13,6 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{d7a14b2f-8b12-4728-96f7-c4e02f93cce7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Thread">
+      <UniqueIdentifier>{735a9e50-c95c-4863-bc0a-3b978483cced}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Thread\Win32">
+      <UniqueIdentifier>{e36cc27e-178f-40b9-9171-aaf59f066e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Heap">
+      <UniqueIdentifier>{7bd53523-48da-4f51-8a32-9eda6572a884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{0c03eb87-ecf8-41f8-b254-52db2cb18cb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Proxy">
+      <UniqueIdentifier>{e20e63b7-b5a9-4d7f-a199-a48c08fbc031}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -24,8 +42,38 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="proxy_parse.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Core\Core.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Thread\Thread.h">
+      <Filter>Core\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Thread\Interlock.h">
+      <Filter>Core\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Heap\Heap.h">
+      <Filter>Core\Heap</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Thread\Timer.h">
+      <Filter>Core\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Thread\CoreThread.h">
+      <Filter>Core\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Proxy\proxy_parse.h">
+      <Filter>Network\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\ProxyServer.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\ClientMessage.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\CoreMacros.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkMacros.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,11 +83,35 @@
     <ClCompile Include="HttpClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="proxy_parse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="proxy.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Core.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Thread\Win32\ThreadW32.cpp">
+      <Filter>Core\Thread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Heap\Heap.cpp">
+      <Filter>Core\Heap</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Thread\Win32\TimerW32.cpp">
+      <Filter>Core\Thread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Thread\CoreThread.cpp">
+      <Filter>Core\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Proxy\proxy_parse.c">
+      <Filter>Network\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\ProxyServer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\ClientMessage.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\CoreMacros.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

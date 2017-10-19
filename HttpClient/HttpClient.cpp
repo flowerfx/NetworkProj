@@ -1,25 +1,19 @@
-#include "NetworkMgr.h"
-#include "NetHttpClient.h"
-int main_proxy(int port);
+
+#include "Network\ProxyServer.h"
+
 int main()
 {
-	return main_proxy(8888);
+	App::Network::ProxyServer * proxy_server = new App::Network::ProxyServer(8888 , App::Network::IPv4::LocalHostIP());
 
-	NetMgr->init();
-	NetMgr->getHttpClient()->RequestUrl("https://google.com.vn", netlib::network::HttpRequest::Type::GET, true);
-	NetMgr->getHttpClient()->setCallBack([](std::vector<char>* strBuffer) {
-		if (strBuffer != nullptr)
-		{
-			std::string str(strBuffer->begin() , strBuffer->end());
-
-		}
-	});
-
-	do
+	HRESULT res = S_OK;
+	res = proxy_server->init();
+	if (res == S_OK)
 	{
-		NetMgr->mainLoop(1.f / 60.f);
 
-	} while (true);
+	}
+
 
 	return 1;
+
+
 }
