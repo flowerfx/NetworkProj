@@ -137,22 +137,32 @@ namespace App
 		}
 
 #define MAX_BUF_SIZE  500000
+		void writeToClient(int Clientfd, int Serverfd);
 
 		void sendRequestToServer(int Clientfd, int Serverfd, struct ParsedRequest *req)
 		{
-			int iRecv;
+			int iRecv = 0;
 			char buf[MAX_BUF_SIZE];
 
-			while (true) {
-				iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0);
-				if (iRecv >= 0)
+			//while (true) 
+			{
+				//iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0);
+				//if (iRecv >= 0)
 				{
 					std::string buff;
-					buff.append("HTTP/1.1 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
+					buff.append("1.1 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
 					//buff.append(req->path);
 					writeToclientSocket(buff.c_str(), Clientfd, buff.size());
 					memset(buf, 0, sizeof buf);
-					break;
+
+					//start handshake here
+					iRecv = recv(Clientfd, buf, MAX_BUF_SIZE, 0);
+					HRESULT hr = writeToserverSocket(buf, Serverfd, iRecv);
+					if (hr == S_OK)
+					{
+						writeToClient(Clientfd, Serverfd);
+					}
+					//break;
 				}
 			}
 
@@ -277,10 +287,12 @@ namespace App
 			HRESULT hr  ;
 			if (strcmp(req->method, "CONNECT") == 0)
 			{
-				hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
-				if (hr == S_OK)
+				//hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
+				//if (hr == S_OK)
 				{
 					sendRequestToServer(newsockfd, iServerfd, req);
+
+
 				}
 			}
 			else if (strcmp(req->method, "GET") == 0)
