@@ -1,14 +1,331 @@
 #include "ProxyServer.h"
+#include "ClientMessage.h"
 #include "Network/Proxy/proxy_parse.h"
 
 namespace App
 {
 	namespace Network
 	{
+		void appExit(int d)
+		{
+			exit(d);
+		}
+
+		char* convert_Request_to_string(struct ParsedRequest *req)
+		{
+
+			/* Set headers */
+			ParsedHeader_set(req, "Host", req->host);
+			ParsedHeader_set(req, "Connection", "close");
+
+			int iHeadersLen = ParsedHeader_headersLen(req);
+
+			char *headersBuf;
+
+			headersBuf = (char*)malloc(iHeadersLen + 1);
+
+			if (headersBuf == NULL) {
+				ERROR_OUT(" [convert_Request_to_string] Error in memory allocation  of headersBuffer !");
+				return NULL;
+			}
+
+
+			ParsedRequest_unparse_headers(req, headersBuf, iHeadersLen);
+			headersBuf[iHeadersLen] = '\0';
+
+
+			int request_size = strlen(req->method) + strlen(req->path) + strlen(req->version) + iHeadersLen + 4;
+
+			char *serverReq;
+
+			serverReq = (char *)malloc(request_size + 1);
+
+			if (serverReq == NULL) {
+				ERROR_OUT(" [convert_Request_to_string]  Error in memory allocation for serverrequest !");
+				return NULL;
+			}
+
+			serverReq[0] = '\0';
+			strcpy(serverReq, req->method);
+			strcat(serverReq, " ");
+			strcat(serverReq, req->path);
+			strcat(serverReq, " ");
+			strcat(serverReq, req->version);
+			strcat(serverReq, "\r\n");
+			strcat(serverReq, headersBuf);
+
+			free(headersBuf);
+
+			return serverReq;
+
+		}
+
+		u32 createserverSocket(char *pcAddress, char *pcPort) {
+			struct addrinfo ahints;
+			struct addrinfo *paRes;
+
+			int iSockfd;
+
+			/* Get address information for stream socket on input port */
+			memset(&ahints, 0, sizeof(ahints));
+			ahints.ai_family = AF_UNSPEC;
+			ahints.ai_socktype = SOCK_STREAM;
+			if (getaddrinfo(pcAddress, pcPort, &ahints, &paRes) != 0) {
+				ERROR_OUT("[createserverSocket] Error in server address format !");
+				return S_FAILED;
+			}
+
+			/* Create and connect */
+			if ((iSockfd = socket(paRes->ai_family, paRes->ai_socktype, paRes->ai_protocol)) < 0) {
+				ERROR_OUT("[createserverSocket] Error in creating socket to server ! ");
+				return S_FAILED;
+			}
+
+			if (connect(iSockfd, paRes->ai_addr, paRes->ai_addrlen) < 0) {
+				ERROR_OUT("[createserverSocket] Error in connecting to server ! ");
+				return S_FAILED;
+			}
+
+			/* Free paRes, which was dynamically allocated by getaddrinfo */
+			freeaddrinfo(paRes);
+
+			return iSockfd;
+		}
+
+		HRESULT writeToserverSocket(const char* buff_to_server, int sockfd, int buff_length)
+		{
+
+			std::string temp;
+
+			temp.append(buff_to_server);
+
+			int totalsent = 0;
+
+			int senteach;
+
+			while (totalsent < buff_length) {
+				if ((senteach = send(sockfd, (const char *)(buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
+					ERROR_OUT(" [writeToserverSocket] Error in sending to server ! \n");
+					return S_FAILED;
+				}
+				totalsent += senteach;
+
+			}
+			return S_OK;
+		}
+
+		HRESULT writeToclientSocket(const char* buff_to_server, int sockfd, int buff_length)
+		{
+
+			std::string temp;
+
+			temp.append(buff_to_server);
+
+			int totalsent = 0;
+
+			int senteach;
+
+			while (totalsent < buff_length) {
+				if ((senteach = send(sockfd, (const char *)(buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
+					ERROR_OUT(" [writeToclientSocket]  Error in sending to server ! \n");
+					return S_FAILED;
+				}
+				totalsent += senteach;
+
+			}
+			return S_OK;
+		}
+
+#define MAX_BUF_SIZE  500000
+
+		void sendRequestToServer(int Clientfd, int Serverfd, struct ParsedRequest *req)
+		{
+			int iRecv;
+			char buf[MAX_BUF_SIZE];
+
+			while (true) {
+				iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0);
+				if (iRecv >= 0)
+				{
+					std::string buff;
+					buff.append("HTTP/1.1 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
+					//buff.append(req->path);
+					writeToclientSocket(buff.c_str(), Clientfd, buff.size());
+					memset(buf, 0, sizeof buf);
+					break;
+				}
+			}
+
+		}
+
+		void writeToClient(int Clientfd, int Serverfd) {
+
+			int iRecv;
+			char buf[MAX_BUF_SIZE];
+
+			while ((iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
+				writeToclientSocket(buf, Clientfd, iRecv);         // writing to client	    
+				memset(buf, 0, sizeof buf);
+			}
+
+
+			/* Error handling */
+			if (iRecv < 0) {
+				ERROR_OUT(" [writeToClient] Yo..!! Error while recieving from server ! \n");
+				return;
+			}
+		}
+
+		HRESULT datafromclient(s32 sockid)
+		{
+			int maxbuff = MAX_BUF_SIZE;
+			char buf[MAX_BUF_SIZE];
+
+			s32 newsockfd = sockid;
+
+			char *request_message;  // Get message from URL
+
+			request_message = (char *)malloc(maxbuff);
+
+			if (request_message == NULL) {
+				ERROR_OUT("[datafromclient] Error in memory allocation : request_message = null !");
+				return S_FAILED;
+			}
+
+			request_message[0] = '\0';
+
+			int total_recieved_bits = 0;
+
+			while (strstr(request_message, "\r\n\r\n") == NULL) {  // determines end of request
+
+				int recvd = recv(newsockfd, buf, MAX_BUF_SIZE, 0);
+
+				if (recvd < 0) {
+					ERROR_OUT("[datafromclient] Error while receiving !");
+					return S_FAILED;
+
+				}
+				else if (recvd == 0) {
+					break;
+				}
+				else {
+
+					total_recieved_bits += recvd;
+
+					/* if total message size greater than our string size,double the string size */
+
+					buf[recvd] = '\0';
+					if (total_recieved_bits > maxbuff) {
+						maxbuff *= 2;
+						request_message = (char *)realloc(request_message, maxbuff);
+						if (request_message == NULL) {
+							ERROR_OUT("[datafromclient] Error in memory re-allocation !");
+							return S_FAILED;
+						}
+					}
+
+
+				}
+
+				strcat(request_message, buf);
+
+			}
+
+			if (strlen(request_message) <= 0)
+			{
+				ERROR_OUT("[datafromclient] request_message is zero ");
+				return S_FAILED;
+			}
+
+			OUTPUT_PRINT_OUT("request message from client: ");
+			OUTPUT_PRINT_OUT(request_message);
+
+
+			struct ParsedRequest *req;    // contains parsed request
+
+			req = ParsedRequest_create();
+
+			if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {
+				ERROR_OUT("[datafromclient] Error in parse request message..");
+				return S_FAILED;
+			}
+
+			if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
+				req->port = (char *) "80";
+
+
+			/*final request to be sent*/
+
+			char*  browser_req = convert_Request_to_string(req);
+
+			int iServerfd = createserverSocket(req->host, req->port);
+
+			/* To run on IIIT proxy, comment above line and uncomment below line */
+
+			//char iiitproxy[] = "172.31.1.4";
+			//char iiitport[] = "8080";
+
+			// iServerfd = createserverSocket(iiitproxy, iiitport);
+			if (iServerfd == S_FAILED)
+			{
+				ParsedRequest_destroy(req);
+				closesocket(newsockfd);   // close the sockets
+
+				return S_FAILED;
+			}
+
+			HRESULT hr  ;
+			if (strcmp(req->method, "CONNECT") == 0)
+			{
+				hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
+				if (hr == S_OK)
+				{
+					sendRequestToServer(newsockfd, iServerfd, req);
+				}
+			}
+			else if (strcmp(req->method, "GET") == 0)
+			{
+
+				hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
+				if (hr == S_OK)
+				{
+					writeToClient(newsockfd, iServerfd);
+				}
+
+			}
+			else if (strcmp(req->method, "POST") == 0)
+			{
+				int ttt = 0; 
+				ttt ++;
+			}
+			closesocket(iServerfd);
+
+
+			//  Doesn't make any sense ..as to send something
+			return S_OK;
+
+		}
+		struct sockaddr cli_addr;
+		void handleRequestThread(int sockfd, ClientMessage * ClientMsg )
+		{
+			/* A browser request starts here */
+			int clilen = sizeof(struct sockaddr);
+			int newsockfd;
+			newsockfd = accept(sockfd, &cli_addr, (socklen_t*)&clilen);
+			ClientMsg->setsocket_client_id(newsockfd);
+			if (newsockfd < 0) {
+				ERROR_OUT("ERROR On Accepting Request ! i.e requests limit crossed");
+				return;
+			}
+			datafromclient(newsockfd);
+			closesocket(newsockfd);
+		}
+
 #define DEF_CAPILITY 100
 		ProxyServer::ProxyServer() :
 			port(0),
 			ip(0),
+			numberClientMsg(0),
 			maxCapility(DEF_CAPILITY),
 			socketId(-1)
 		{
@@ -18,6 +335,7 @@ namespace App
 		ProxyServer::ProxyServer(u32 _port, IPv4 _ip) :
 			port(_port),
 			ip(_ip),
+			numberClientMsg(0),
 			maxCapility(DEF_CAPILITY),
 			socketId(-1)
 		{
@@ -26,7 +344,11 @@ namespace App
 
 		ProxyServer::~ProxyServer()
 		{
-
+			for (u32 i = 0; i < numberClientMsg; i++)
+			{
+				DELETE(_listClientMsg[i]);
+				_listClientMsg[i] = nullptr;
+			}
 		}
 
 		HRESULT ProxyServer::init()
@@ -41,6 +363,7 @@ namespace App
 			}
 
 			return init(wsaData);
+
 		}
 
 		HRESULT ProxyServer::init(WSADATA & wsaData)
@@ -81,7 +404,7 @@ namespace App
 
 			serv_addr.sin_family = AF_INET;     // ip4 family 
 			serv_addr.sin_addr.s_net = ip.net0;
-			serv_addr.sin_addr.s_host = ip.net0;
+			serv_addr.sin_addr.s_host = ip.net1;
 			serv_addr.sin_addr.s_lh = ip.subnet;
 			serv_addr.sin_addr.s_impno = ip.host;
 
@@ -97,6 +420,24 @@ namespace App
 			}
 
 			listen(socketId, maxCapility);  // can have maximum of 100 browser requests
+
+			//create
+			numberClientMsg = 4;
+			struct sockaddr cli_addr;
+			for (u32 i = 0; i < numberClientMsg; i++)
+			{
+				_listClientMsg[i] = NEW(ClientMessage);
+				ClientMessage * p  = _listClientMsg[i];
+				p->setsocket_server_id(socketId);
+				p->startRequest([](void * data) -> u32
+				{
+					ClientMessage * client = (ClientMessage*)data;
+					handleRequestThread(client->getsocket_server_id(), client);
+					return 1;
+				});
+			}
+
+			return S_OK;
 
 		}
 
@@ -120,6 +461,12 @@ namespace App
 				return S_FAILED;
 			}
 
+			for (u32 i = 0; i < numberClientMsg; i++)
+			{
+				ClientMessage * p = _listClientMsg[i];
+				p->onCheckCLientMsg();
+			}
+			return S_OK;
 
 		}
 

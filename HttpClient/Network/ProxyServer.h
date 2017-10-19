@@ -2,12 +2,13 @@
 #define __PROXY_SERVER_H__
 
 #include "NetworkMacros.h"
-
+#include "Core/Heap/Heap.h"
 namespace App
 {
 	namespace Network
 	{
-
+		#define MAX_CLIENT 1600
+		class ClientMessage;
 		class ProxyServer : public Core
 		{
 		private:
@@ -24,6 +25,10 @@ namespace App
 			//maximum capility client request
 			SYNC_VALUE(maxCapility, u64);
 
+			//handle message from client
+			u32 numberClientMsg;
+			ClientMessage * _listClientMsg[MAX_CLIENT];
+
 		public:
 			ProxyServer();
 			ProxyServer(u32 _port, IPv4 _ip);
@@ -35,6 +40,9 @@ namespace App
 
 			//listen and get info from client connect to port
 			HRESULT onHandleRequestFromClient();
+
+			//
+		
 
 
 		};

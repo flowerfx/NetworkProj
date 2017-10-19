@@ -4,7 +4,7 @@
 #include <new>
 #include "Core/CoreMacros.h"
 
-#define USE_MANAGE_HEAP
+//#define USE_MANAGE_HEAP
 
 namespace App
 {

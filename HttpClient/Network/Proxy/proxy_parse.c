@@ -584,8 +584,9 @@ extern "C" {
 			return -1;
 		}
 		if (strcmp(parse->method, "GET") != 0 && 
-			strcmp(parse->method, "CONNECT") != 0 &&
-			strcmp(parse->method, "POST") != 0 
+			strcmp(parse->method, "POST") != 0 &&
+			strcmp(parse->method, "CONNECT") != 0 
+
 			) 
 		{
 			debug("invalid request line, method not 'GET': %s\n",
@@ -597,7 +598,7 @@ extern "C" {
 		}
 
 		int res = -1;
-		if (strcmp(parse->method, "GET") == 0)
+		if (strcmp(parse->method, "GET") == 0 || strcmp(parse->method, "POST") == 0 )
 		{
 			res =  handleGetMethod(parse, buf, saveptr, tmp_buf);
 		}

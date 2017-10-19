@@ -64,7 +64,7 @@ namespace App
 
 		///----------------------------------------------------------------------
 		///----------------------------------------------------------------------
-		RKThread* RKThread_Create(const char* pThreadName, RKThreadCallback* pThreadAddress, void* pThreadParams, RKThreadPriority priority = RKThreadPriority_Normal, RKThreadStackSize stackSize = RKThreadStackSize_32K);
+		RKThread* RKThread_Create(const char* pThreadName, RKThreadCallback* pThreadAddress, void* pThreadParams, RKThreadPriority priority = RKThreadPriority_Normal, RKThreadStackSize stackSize = RKThreadStackSize_2048K);
 		void RKThread_Destroy(RKThread** ppThread);
 		bool RKThread_Start(RKThread* pThread);
 		void RKThread_Yield();

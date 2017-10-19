@@ -3,8 +3,9 @@
 // stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"
+#include <mutex>
+#include <iostream>
 #include "CoreMacros.h"
-
 namespace App
 {
 	/*
@@ -30,6 +31,11 @@ namespace App
 #define BRIGHT		15
 #define PINK		13
 #define GREEN		10
+	std::mutex& get_cout_mutex()
+	{
+		static std::mutex m;
+		return m;
+	}
 
 	std::string format(const char* format, ...)
 	{
@@ -54,6 +60,8 @@ namespace App
 
 	void PrintOut(App::TYPE_DEBUG type, const char * strformat, ...)
 	{
+		
+
 		va_list args;
 		va_start(args, strformat);
 		std::string str;
@@ -65,20 +73,19 @@ namespace App
 			free(buf);
 		}
 		va_end(args);
-
 		switch (type)
 		{
 		case App::TYPE_DEBUG::T_ERROR:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
 			str.insert(0, "ERROR: ");
 			OutputDebugStringA(str.c_str());
-			printf_s(str.c_str());
+			std::cout << str.c_str();
 			break;
 		case App::TYPE_DEBUG::T_WARNING:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), YELLOW);
 			str.insert(0, "WARNING: ");
 			OutputDebugStringA(str.c_str());
-			printf_s(str.c_str());
+			std::cout << str.c_str();
 			break;
 		case App::TYPE_DEBUG::T_OUTPUT:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BRIGHT);
@@ -90,19 +97,18 @@ namespace App
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), PINK);
 			//str.insert(0, "WARNING: ");
 			//OutputDebugStringA(str.c_str);
-			printf_s(str.c_str());
+			std::cout << str.c_str();
 			break;
 		case App::TYPE_DEBUG::T_OUTPUT_PRINT:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), GREEN);
 			str.insert(0, "OUTPUT: ");
 			OutputDebugStringA(str.c_str());
-			printf_s(str.c_str());
+			std::cout<<str.c_str();
 			break;
 		default:
 			break;
 		}
-		printf_s("\n");
-
+		std::cout<<std::endl;
 	}
 
 	void Assert(bool isCorrect, const char * msg, ...)

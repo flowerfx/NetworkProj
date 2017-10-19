@@ -101,7 +101,7 @@ namespace App
 			}
 		}
 
-		void Thread::OnCheckUpdateThread(const std::function<void()>& func)
+		void Thread::OnCheckUpdateThread(const std::function<void(void *)>& func , void * data)
 		{
 			if (m_exit == NULL)
 				return;
@@ -125,7 +125,7 @@ namespace App
 					break;
 				}
 
-				func();
+				func(data);
 				//run the function here !
 
 				m_IsThreadOnRunning = false;

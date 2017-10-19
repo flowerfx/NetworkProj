@@ -33,9 +33,9 @@ namespace App
 									RKThreadCallback* pThreadAddress, 
 									void* pThreadParams, 
 									RKThreadPriority priority = RKThreadPriority_Normal, 
-									RKThreadStackSize stackSize = RKThreadStackSize_32K);
+									RKThreadStackSize stackSize = RKThreadStackSize_2048K);
 			void ReleaseThread();
-			void OnCheckUpdateThread(const std::function<void()>& func);
+			void OnCheckUpdateThread(const std::function<void(void *)>& func , void * data);
 			void OnWakeUpAndRunThread();
 
 			bool IsThreadRunning() { return m_IsThreadOnRunning; }

@@ -22,8 +22,6 @@
 #include "proxy_parse.h"
 
 
-
-
 void appExit(int d)
 {
 	exit(d);
