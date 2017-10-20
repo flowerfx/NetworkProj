@@ -15,8 +15,16 @@ namespace App
 		{
 
 			/* Set headers */
+
 			ParsedHeader_set(req, "Host", req->host);
-			ParsedHeader_set(req, "Connection", "close");
+			if (strcmp(req->method, "GET") == 0)
+			{
+				ParsedHeader_set(req, "Connection", "close");
+			}
+			else if (strcmp(req->method, "POST") == 0)
+			{
+				ParsedHeader_set(req, "Connection", "keep-alive");
+			}
 
 			int iHeadersLen = ParsedHeader_headersLen(req);
 
@@ -48,6 +56,10 @@ namespace App
 			serverReq[0] = '\0';
 			strcpy(serverReq, req->method);
 			strcat(serverReq, " ");
+			if (strcmp(req->method, "POST") == 0)
+			{
+				strcat(serverReq, req->host);
+			}
 			strcat(serverReq, req->path);
 			strcat(serverReq, " ");
 			strcat(serverReq, req->version);
@@ -137,38 +149,67 @@ namespace App
 		}
 
 #define MAX_BUF_SIZE  500000
-		void writeToClient(int Clientfd, int Serverfd);
+		HRESULT writeToClient(int Clientfd, int Serverfd);
 
-		void sendRequestToServer(int Clientfd, int Serverfd, struct ParsedRequest *req)
+		void HandleRequestConnectWithClient(int Clientfd, int Serverfd, struct ParsedRequest *req)
 		{
-			int iRecv = 0;
+			u32 revSize = 0;
 			char buf[MAX_BUF_SIZE];
-
-			//while (true) 
-			{
-				//iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0);
-				//if (iRecv >= 0)
-				{
-					std::string buff;
-					buff.append("1.1 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
+			HRESULT hr;
+			
+			std::string buff;
+			buff.append("HTTP/");
+			buff.append(req->version);
+			buff.append(" 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
 					//buff.append(req->path);
-					writeToclientSocket(buff.c_str(), Clientfd, buff.size());
+			u32 state = 0;
+			do {
+				if (state == 0)
+				{
+					hr = writeToclientSocket(buff.c_str(), Clientfd, buff.size());
+					if (hr == S_FAILED)
+						continue;
+					state = 1;
 					memset(buf, 0, sizeof buf);
-
-					//start handshake here
-					iRecv = recv(Clientfd, buf, MAX_BUF_SIZE, 0);
-					HRESULT hr = writeToserverSocket(buf, Serverfd, iRecv);
-					if (hr == S_OK)
-					{
-						writeToClient(Clientfd, Serverfd);
-					}
-					//break;
 				}
-			}
 
+				//start handshake here
+				if (state == 1)
+				{
+					//receive SSL engryption from client
+					revSize = recv(Clientfd, buf, MAX_BUF_SIZE, 0);
+					if (revSize <= 0)
+						continue;
+					state = 2;
+				}
+				
+
+				if (state == 2)
+				{
+					//after receiving SSL from client, send its to server
+					hr = writeToserverSocket(buf, Serverfd, revSize);
+					if (hr == S_FAILED)
+						continue;
+					state = 3;
+				}
+
+				if (state == 3)
+				{
+					//after sending to server, wait respond from server and send its back to client
+					hr = writeToClient(Clientfd, Serverfd);
+					if (hr == S_FAILED)
+						continue;
+					state = 4;
+				}
+
+				if (state == 4)
+				{
+					break;
+				}
+			} while (true);
 		}
 
-		void writeToClient(int Clientfd, int Serverfd) {
+		HRESULT writeToClient(int Clientfd, int Serverfd) {
 
 			int iRecv;
 			char buf[MAX_BUF_SIZE];
@@ -176,14 +217,17 @@ namespace App
 			while ((iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
 				writeToclientSocket(buf, Clientfd, iRecv);         // writing to client	    
 				memset(buf, 0, sizeof buf);
+				return S_OK;
 			}
 
 
 			/* Error handling */
 			if (iRecv < 0) {
 				ERROR_OUT(" [writeToClient] Yo..!! Error while recieving from server ! \n");
-				return;
+				return S_FAILED;
 			}
+
+			return S_FAILED;
 		}
 
 		HRESULT datafromclient(s32 sockid)
@@ -264,18 +308,8 @@ namespace App
 				req->port = (char *) "80";
 
 
-			/*final request to be sent*/
-
-			char*  browser_req = convert_Request_to_string(req);
-
 			int iServerfd = createserverSocket(req->host, req->port);
 
-			/* To run on IIIT proxy, comment above line and uncomment below line */
-
-			//char iiitproxy[] = "172.31.1.4";
-			//char iiitport[] = "8080";
-
-			// iServerfd = createserverSocket(iiitproxy, iiitport);
 			if (iServerfd == S_FAILED)
 			{
 				ParsedRequest_destroy(req);
@@ -287,31 +321,35 @@ namespace App
 			HRESULT hr  ;
 			if (strcmp(req->method, "CONNECT") == 0)
 			{
-				//hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
-				//if (hr == S_OK)
-				{
-					sendRequestToServer(newsockfd, iServerfd, req);
-
-
-				}
+				HandleRequestConnectWithClient(newsockfd, iServerfd, req);
+				closesocket(iServerfd);
 			}
 			else if (strcmp(req->method, "GET") == 0)
 			{
-
+				/*final request to be sent*/
+				char*  browser_req = convert_Request_to_string(req);
 				hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
 				if (hr == S_OK)
 				{
 					writeToClient(newsockfd, iServerfd);
 				}
-
+				closesocket(iServerfd);
 			}
 			else if (strcmp(req->method, "POST") == 0)
 			{
-				int ttt = 0; 
-				ttt ++;
-			}
-			closesocket(iServerfd);
+				//char*  browser_req = convert_Request_to_string(req);
+				hr = writeToserverSocket(request_message, iServerfd, total_recieved_bits);
+				if (hr == S_OK)
+				{
+					do
+					{
+						hr = writeToClient(newsockfd, iServerfd);
+						if (hr == S_OK)
+							break;
 
+					} while (true);
+				}
+			}
 
 			//  Doesn't make any sense ..as to send something
 			return S_OK;
@@ -434,7 +472,7 @@ namespace App
 			listen(socketId, maxCapility);  // can have maximum of 100 browser requests
 
 			//create
-			numberClientMsg = 4;
+			numberClientMsg = 1;
 			struct sockaddr cli_addr;
 			for (u32 i = 0; i < numberClientMsg; i++)
 			{

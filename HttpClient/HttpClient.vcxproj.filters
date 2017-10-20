@@ -83,9 +83,6 @@
     <ClCompile Include="HttpClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="proxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\Core.cpp">
       <Filter>Core</Filter>
     </ClCompile>

@@ -60,8 +60,7 @@ namespace App
 
 	void PrintOut(App::TYPE_DEBUG type, const char * strformat, ...)
 	{
-		
-
+	
 		va_list args;
 		va_start(args, strformat);
 		std::string str;

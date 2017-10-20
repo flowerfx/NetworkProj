@@ -175,7 +175,6 @@
     <ClCompile Include="Network\ClientMessage.cpp" />
     <ClCompile Include="Network\ProxyServer.cpp" />
     <ClCompile Include="Network\Proxy\proxy_parse.c" />
-    <ClCompile Include="proxy.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
