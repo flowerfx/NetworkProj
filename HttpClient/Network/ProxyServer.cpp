@@ -6,6 +6,11 @@ namespace App
 {
 	namespace Network
 	{
+		void FREE(void * block , size_t size)
+		{
+			delete block;
+		}
+
 		void appExit(int d)
 		{
 			exit(d);
@@ -19,7 +24,7 @@ namespace App
 			ParsedHeader_set(req, "Host", req->host);
 			if (strcmp(req->method, "GET") == 0)
 			{
-				ParsedHeader_set(req, "Connection", "close");
+				ParsedHeader_set(req, "Connection", "keep-alive");
 			}
 			else if (strcmp(req->method, "POST") == 0)
 			{
@@ -147,9 +152,6 @@ namespace App
 					hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_client_id());
 					if (hr == S_FAILED)
 						continue;
-					/*hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_server_id());
-					if (hr == S_FAILED)
-						continue;*/
 					state = 1;
 					memset(buf, 0, sizeof buf);
 				}
@@ -219,17 +221,7 @@ namespace App
 			int maxbuff = MAX_BUF_SIZE;
 			char buf[MAX_BUF_SIZE];
 
-			char *request_message;  // Get message from URL
-
-			request_message = (char *)malloc(maxbuff);
-
-			if (request_message == NULL) {
-				ERROR_OUT("[datafromclient] Error in memory allocation : request_message = null !");
-				return S_FAILED;
-			}
-
-			request_message[0] = '\0';
-
+		
 			u32 total_recieved_bits = 0;
 			HRESULT hr;
 			if (msg->getSSLState() == 1)
@@ -237,7 +229,7 @@ namespace App
 				s32 size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
 				if (size > 0) {
 					sendBufferViaSocket(buf, size, msg->getsocket_client_id());         // writing to client	    
-					memset(buf, 0, sizeof buf);
+					memset(buf, 0, sizeof(buf));
 				}
 				else
 				{
@@ -274,44 +266,54 @@ namespace App
 				return S_OK;
 			}
 
-			while (strstr(request_message, "\r\n\r\n") == NULL) {  // determines end of request
+			char *request_message;  // Get message from URL
+			request_message = (char *)malloc(maxbuff);
+			if (request_message == NULL) {
+				ERROR_OUT("[datafromclient] Error in memory allocation : request_message = null !");
+				return S_FAILED;
+			}
+			request_message[0] = '\0';
 
-					s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
+			while (strstr(request_message, "\r\n\r\n") == NULL) {
+				s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 
-					if (recvd < 0) {
-						ERROR_OUT("[datafromclient] Error while receiving !");
-						return S_FAILED;
+				if (recvd < 0) {
+					ERROR_OUT("[datafromclient] Error while receiving !");
+					FREE(request_message, maxbuff);
+					return S_FAILED;
 
-					}
-					else if (recvd == 0) {
-						break;
-					}
-					else {
+				}
+				else if (recvd == 0) //nothing to get from client so close down the socket
+				{
+					closesocket(msg->getsocket_server_id());
+					msg->setsocket_server_id(-1);
+					FREE(request_message, maxbuff);
+					return S_FAILED;
+				}
+				else {
 
-						total_recieved_bits += recvd;
+					total_recieved_bits += recvd;
 
-						/* if total message size greater than our string size,double the string size */
+					/* if total message size greater than our string size,double the string size */
+					buf[recvd] = '\0';
 
-						buf[recvd] = '\0';
-						if (total_recieved_bits > maxbuff) {
-							maxbuff *= 2;
-							request_message = (char *)realloc(request_message, maxbuff);
-							if (request_message == NULL) {
-								ERROR_OUT("[datafromclient] Error in memory re-allocation !");
-								return S_FAILED;
-							}
+					if (total_recieved_bits > maxbuff) {
+						maxbuff *= 2;
+						request_message = (char *)realloc(request_message, maxbuff);
+						if (request_message == NULL) {
+							ERROR_OUT("[datafromclient] Error in memory re-allocation !");
+							return S_FAILED;
 						}
-
-
 					}
 
 					strcat(request_message, buf);
-
+				}
 			}
 			
 
 			if (strlen(request_message) <= 0)
 			{
+				FREE(request_message, maxbuff);
 				ERROR_OUT("[datafromclient] request_message is zero ");
 				return S_FAILED;
 			}
@@ -325,6 +327,7 @@ namespace App
 			req = ParsedRequest_create();
 
 				if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {
+					FREE(request_message, maxbuff);
 					ERROR_OUT("[datafromclient] Error in parse request message..");
 					return S_FAILED;
 				}
@@ -341,14 +344,14 @@ namespace App
 				{
 					ParsedRequest_destroy(req);
 					//closesocket(newsockfd);   // close the sockets
-
+					FREE(request_message, maxbuff);
 					return S_FAILED;
 				}
 
 				if (strcmp(req->method, "CONNECT") == 0)
 				{
 					s32 revSize = -1;
-					do
+					/*do
 					{
 						hr = sendBufferViaSocket(request_message, total_recieved_bits, msg->getsocket_server_id());
 						if (hr == S_OK)
@@ -356,16 +359,16 @@ namespace App
 							revSize = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
 							break;
 						}
-					} while (true);
-					if (revSize <= 0)
-					{
-						hr = sendBufferViaSocket(buf, revSize, msg->getsocket_client_id());
-						closesocket(msg->getsocket_server_id());
-						msg->setsocket_server_id(-1);
-						return S_FAILED;
-						//HandleRequestConnectWithClient(msg, req);
-					}
-					else
+					} while (true);*/
+					//if (revSize <= 0)
+					//{
+					//	hr = sendBufferViaSocket(buf, revSize, msg->getsocket_client_id());
+					//	closesocket(msg->getsocket_server_id());
+					//	msg->setsocket_server_id(-1);
+					//	return S_FAILED;
+					//	//HandleRequestConnectWithClient(msg, req);
+					//}
+					//else
 					{
 						msg->setSSLState(1);
 						HandleRequestConnectWithClient(msg, req);
@@ -376,12 +379,22 @@ namespace App
 				{
 					/*final request to be sent*/
 					char*  browser_req = convert_Request_to_string(req);
+					
 					hr = sendBufferViaSocket(browser_req, total_recieved_bits, msg->getsocket_server_id());
 					if (hr == S_OK)
 					{
-						writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
+						do
+						{
+							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
+							if (hr == S_FAILED)
+								break;
+						} while (true);
 					}
-					//closesocket(msg->getsocket_server_id());
+
+					if (hr == S_FAILED)
+					{
+						
+					}
 				}
 				else if (strcmp(req->method, "POST") == 0)
 				{
@@ -392,14 +405,14 @@ namespace App
 						do
 						{
 							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
-							if (hr == S_OK)
+							if (hr == S_FAILED)
 								break;
 
 						} while (true);
 					}
 					//closesocket(msg->getsocket_server_id());
 			}
-
+			FREE(request_message, maxbuff);
 			//  Doesn't make any sense ..as to send something
 			return S_OK;
 
@@ -515,7 +528,7 @@ namespace App
 
 			serv_addr.sin_port = htons(port);
 
-			OUTPUT_PRINT_OUT("WSAData init with port: %d ,  IP:  %i:%i:%i:%i and socketID: %i", port, ip.net0, ip.net1, ip.host, ip.subnet , socketId);
+			OUTPUT_PRINT_OUT("WSAData init with port: %d ,  IP:  %i:%i:%i:%i and socketID: %i", port, ip.net0, ip.net1, ip.subnet, ip.host , socketId);
 
 			int binded = bind(socketId, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
