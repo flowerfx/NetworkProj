@@ -13,15 +13,21 @@ namespace App
 			//store id of socket client and server
 			SYNC_VALUE(socket_client_id, s32);
 			SYNC_VALUE(socket_server_id, s32);
-
+			SYNC_VALUE(socket_id, s32);
 			//store the function that handle the client msg thread
 			std::function<u32(void * data)> _func;
+
+			//
+			u32		state_ssl;
 		public:
 			ClientMessage();
 			virtual ~ClientMessage();
 
 			void startRequest( std::function<u32(void *)>  fc);
 			void onCheckCLientMsg();
+
+			u32		getSSLState() {return state_ssl ;}
+			void	setSSLState(u32 s) { state_ssl = s; }
 		};
 	}
 }

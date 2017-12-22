@@ -104,7 +104,7 @@ namespace App
 			return iSockfd;
 		}
 
-		HRESULT writeToserverSocket(const char* buff_to_server, int sockfd, int buff_length)
+		HRESULT sendBufferViaSocket(const char* buff_to_server, u32 buff_length, s32 sockfd)
 		{
 
 			std::string temp;
@@ -117,29 +117,7 @@ namespace App
 
 			while (totalsent < buff_length) {
 				if ((senteach = send(sockfd, (const char *)(buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
-					ERROR_OUT(" [writeToserverSocket] Error in sending to server ! \n");
-					return S_FAILED;
-				}
-				totalsent += senteach;
-
-			}
-			return S_OK;
-		}
-
-		HRESULT writeToclientSocket(const char* buff_to_server, int sockfd, int buff_length)
-		{
-
-			std::string temp;
-
-			temp.append(buff_to_server);
-
-			int totalsent = 0;
-
-			int senteach;
-
-			while (totalsent < buff_length) {
-				if ((senteach = send(sockfd, (const char *)(buff_to_server + totalsent), buff_length - totalsent, 0)) < 0) {
-					ERROR_OUT(" [writeToclientSocket]  Error in sending to server ! \n");
+					ERROR_OUT(" [sendBufferViaSocket]  Error in sending to server ! \n");
 					return S_FAILED;
 				}
 				totalsent += senteach;
@@ -149,9 +127,9 @@ namespace App
 		}
 
 #define MAX_BUF_SIZE  500000
-		HRESULT writeToClient(int Clientfd, int Serverfd);
+		HRESULT writeToClientViaServer(s32 Clientfd, s32 Serverfd);
 
-		void HandleRequestConnectWithClient(int Clientfd, int Serverfd, struct ParsedRequest *req)
+		void HandleRequestConnectWithClient(const proxy_header & proxy, struct ParsedRequest *req)
 		{
 			u32 revSize = 0;
 			char buf[MAX_BUF_SIZE];
@@ -166,7 +144,7 @@ namespace App
 			do {
 				if (state == 0)
 				{
-					hr = writeToclientSocket(buff.c_str(), Clientfd, buff.size());
+					hr = sendBufferViaSocket(buff.c_str(), buff.size(), proxy.client_socket_id);
 					if (hr == S_FAILED)
 						continue;
 					state = 1;
@@ -177,7 +155,7 @@ namespace App
 				if (state == 1)
 				{
 					//receive SSL engryption from client
-					revSize = recv(Clientfd, buf, MAX_BUF_SIZE, 0);
+					revSize = recv(proxy.client_socket_id, buf, MAX_BUF_SIZE, 0);
 					if (revSize <= 0)
 						continue;
 					state = 2;
@@ -187,7 +165,7 @@ namespace App
 				if (state == 2)
 				{
 					//after receiving SSL from client, send its to server
-					hr = writeToserverSocket(buf, Serverfd, revSize);
+					hr = sendBufferViaSocket(buf, revSize, proxy.server_socket_id);
 					if (hr == S_FAILED)
 						continue;
 					state = 3;
@@ -196,7 +174,7 @@ namespace App
 				if (state == 3)
 				{
 					//after sending to server, wait respond from server and send its back to client
-					hr = writeToClient(Clientfd, Serverfd);
+					hr = writeToClientViaServer(proxy.client_socket_id, proxy.server_socket_id);
 					if (hr == S_FAILED)
 						continue;
 					state = 4;
@@ -209,33 +187,33 @@ namespace App
 			} while (true);
 		}
 
-		HRESULT writeToClient(int Clientfd, int Serverfd) {
+		HRESULT writeToClientViaServer(int Clientfd, int Serverfd) {
 
-			int iRecv;
+			s32 size;
 			char buf[MAX_BUF_SIZE];
 
-			while ((iRecv = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
-				writeToclientSocket(buf, Clientfd, iRecv);         // writing to client	    
+			while ((size = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
+				sendBufferViaSocket(buf, size, Clientfd);         // writing to client	    
 				memset(buf, 0, sizeof buf);
 				return S_OK;
 			}
 
 
 			/* Error handling */
-			if (iRecv < 0) {
-				ERROR_OUT(" [writeToClient] Yo..!! Error while recieving from server ! \n");
+			if (size < 0) {
+				ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
 				return S_FAILED;
 			}
 
 			return S_FAILED;
 		}
 
-		HRESULT datafromclient(s32 sockid)
+
+
+		HRESULT datafromclient(ClientMessage * msg)
 		{
 			int maxbuff = MAX_BUF_SIZE;
 			char buf[MAX_BUF_SIZE];
-
-			s32 newsockfd = sockid;
 
 			char *request_message;  // Get message from URL
 
@@ -248,42 +226,75 @@ namespace App
 
 			request_message[0] = '\0';
 
-			int total_recieved_bits = 0;
+			u32 total_recieved_bits = 0;
+			HRESULT hr;
+			if (msg->getSSLState() == 1)
+			{
+				s32 size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
+				if (size > 0){
+					sendBufferViaSocket(buf, size, msg->getsocket_client_id());         // writing to client	    
+					memset(buf, 0, sizeof buf);
+				}
+				//closesocket(msg->getsocket_server_id());
+				msg->setSSLState(2);
+				return S_OK;
+			}
+			else if (msg->getSSLState() == 2)
+			{
+				u32 size = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
+				if (size > 0)
+				{
+					hr = sendBufferViaSocket(buf, size, msg->getsocket_server_id());
+					memset(buf, 0, sizeof buf);
+				}
+				if (hr == S_OK)
+				{
+					size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
+					if (size > 0)
+					{
+						hr = sendBufferViaSocket(buf, size, msg->getsocket_client_id());
+						memset(buf, 0, sizeof buf);
+					}
+				}
+				msg->setSSLState(2);
+				return S_OK;
+			}
 
 			while (strstr(request_message, "\r\n\r\n") == NULL) {  // determines end of request
 
-				int recvd = recv(newsockfd, buf, MAX_BUF_SIZE, 0);
+					u32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 
-				if (recvd < 0) {
-					ERROR_OUT("[datafromclient] Error while receiving !");
-					return S_FAILED;
+					if (recvd < 0) {
+						ERROR_OUT("[datafromclient] Error while receiving !");
+						return S_FAILED;
 
-				}
-				else if (recvd == 0) {
-					break;
-				}
-				else {
+					}
+					else if (recvd == 0) {
+						break;
+					}
+					else {
 
-					total_recieved_bits += recvd;
+						total_recieved_bits += recvd;
 
-					/* if total message size greater than our string size,double the string size */
+						/* if total message size greater than our string size,double the string size */
 
-					buf[recvd] = '\0';
-					if (total_recieved_bits > maxbuff) {
-						maxbuff *= 2;
-						request_message = (char *)realloc(request_message, maxbuff);
-						if (request_message == NULL) {
-							ERROR_OUT("[datafromclient] Error in memory re-allocation !");
-							return S_FAILED;
+						buf[recvd] = '\0';
+						if (total_recieved_bits > maxbuff) {
+							maxbuff *= 2;
+							request_message = (char *)realloc(request_message, maxbuff);
+							if (request_message == NULL) {
+								ERROR_OUT("[datafromclient] Error in memory re-allocation !");
+								return S_FAILED;
+							}
 						}
+
+
 					}
 
-
-				}
-
-				strcat(request_message, buf);
+					strcat(request_message, buf);
 
 			}
+			
 
 			if (strlen(request_message) <= 0)
 			{
@@ -294,61 +305,65 @@ namespace App
 			OUTPUT_PRINT_OUT("request message from client: ");
 			OUTPUT_PRINT_OUT(request_message);
 
-
-			struct ParsedRequest *req;    // contains parsed request
+			struct ParsedRequest *req;
+				// contains parsed request
 
 			req = ParsedRequest_create();
 
-			if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {
-				ERROR_OUT("[datafromclient] Error in parse request message..");
-				return S_FAILED;
-			}
-
-			if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
-				req->port = (char *) "80";
-
-
-			int iServerfd = createserverSocket(req->host, req->port);
-
-			if (iServerfd == S_FAILED)
-			{
-				ParsedRequest_destroy(req);
-				closesocket(newsockfd);   // close the sockets
-
-				return S_FAILED;
-			}
-
-			HRESULT hr  ;
-			if (strcmp(req->method, "CONNECT") == 0)
-			{
-				HandleRequestConnectWithClient(newsockfd, iServerfd, req);
-				closesocket(iServerfd);
-			}
-			else if (strcmp(req->method, "GET") == 0)
-			{
-				/*final request to be sent*/
-				char*  browser_req = convert_Request_to_string(req);
-				hr = writeToserverSocket(browser_req, iServerfd, total_recieved_bits);
-				if (hr == S_OK)
-				{
-					writeToClient(newsockfd, iServerfd);
+				if (ParsedRequest_parse(req, request_message, strlen(request_message)) < 0) {
+					ERROR_OUT("[datafromclient] Error in parse request message..");
+					return S_FAILED;
 				}
-				closesocket(iServerfd);
-			}
-			else if (strcmp(req->method, "POST") == 0)
-			{
-				//char*  browser_req = convert_Request_to_string(req);
-				hr = writeToserverSocket(request_message, iServerfd, total_recieved_bits);
-				if (hr == S_OK)
+
+				if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
+					req->port = (char *) "80";
+
+
+				s32 iServerfd = createserverSocket(req->host, req->port);
+				msg->setsocket_server_id(iServerfd);
+				if (iServerfd == S_FAILED)
 				{
-					do
+					ParsedRequest_destroy(req);
+					//closesocket(newsockfd);   // close the sockets
+
+					return S_FAILED;
+				}
+
+				proxy_header proxy(msg->getsocket_server_id(), msg->getsocket_client_id());
+
+				if (strcmp(req->method, "CONNECT") == 0)
+				{
+					proxy.is_ssl = true;
+					msg->setSSLState(1);
+					HandleRequestConnectWithClient(proxy, req);
+					//closesocket(iServerfd);
+				}
+				else if (strcmp(req->method, "GET") == 0)
+				{
+					/*final request to be sent*/
+					char*  browser_req = convert_Request_to_string(req);
+					hr = sendBufferViaSocket(browser_req, total_recieved_bits, msg->getsocket_server_id());
+					if (hr == S_OK)
 					{
-						hr = writeToClient(newsockfd, iServerfd);
-						if (hr == S_OK)
-							break;
-
-					} while (true);
+						writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
+					}
+					//closesocket(msg->getsocket_server_id());
 				}
+				else if (strcmp(req->method, "POST") == 0)
+				{
+					//char*  browser_req = convert_Request_to_string(req);
+					hr = sendBufferViaSocket(request_message, total_recieved_bits, proxy.server_socket_id);
+					if (hr == S_OK)
+					{
+						do
+						{
+							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
+							if (hr == S_OK)
+								break;
+
+						} while (true);
+					}
+					//closesocket(msg->getsocket_server_id());
 			}
 
 			//  Doesn't make any sense ..as to send something
@@ -360,14 +375,20 @@ namespace App
 		{
 			/* A browser request starts here */
 			int clilen = sizeof(struct sockaddr);
-			int newsockfd;
-			newsockfd = accept(sockfd, &cli_addr, (socklen_t*)&clilen);
-			ClientMsg->setsocket_client_id(newsockfd);
-			if (newsockfd < 0) {
-				ERROR_OUT("ERROR On Accepting Request ! i.e requests limit crossed");
-				return;
-			}
-			datafromclient(newsockfd);
+			int newsockfd = -1;
+			HRESULT hr = S_OK;
+			do{
+				if (newsockfd < 0)
+				{
+					newsockfd = accept(sockfd, &cli_addr, (socklen_t*)&clilen);
+					ClientMsg->setsocket_client_id(newsockfd);
+					if (newsockfd < 0) {
+						ERROR_OUT("ERROR On Accepting Request ! i.e requests limit crossed");
+						return;
+					}
+				}
+			    hr = datafromclient(ClientMsg);
+			} while (hr == S_OK);
 			closesocket(newsockfd);
 		}
 
@@ -478,11 +499,11 @@ namespace App
 			{
 				_listClientMsg[i] = NEW(ClientMessage);
 				ClientMessage * p  = _listClientMsg[i];
-				p->setsocket_server_id(socketId);
+				p->setsocket_id(socketId);
 				p->startRequest([](void * data) -> u32
 				{
 					ClientMessage * client = (ClientMessage*)data;
-					handleRequestThread(client->getsocket_server_id(), client);
+					handleRequestThread(client->getsocket_id(), client);
 					return 1;
 				});
 			}
