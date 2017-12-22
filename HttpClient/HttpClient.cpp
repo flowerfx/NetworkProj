@@ -8,6 +8,7 @@ int main()
 	HRESULT hr = proxy_server->init();
 	if (hr == S_OK)
 	{
+		proxy_server->onReadDenyListFromFile("list_deny.txt");
 		while (true)
 		{
 			hr = proxy_server->onHandleRequestFromClient();

@@ -4,11 +4,13 @@ namespace App
 {
 	namespace Network
 	{
-		ClientMessage::ClientMessage() :
+		ClientMessage::ClientMessage(ProxyServer * server) :
 			socket_client_id(-1),
 			socket_server_id(-1),
 			_func(nullptr),
-			_thread(nullptr)
+			_thread(nullptr),
+			_server(server),
+			state_ssl(0)
 		{
 
 		}

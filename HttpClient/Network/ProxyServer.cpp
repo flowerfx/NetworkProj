@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ProxyServer.h"
 #include "ClientMessage.h"
 #include "Network/Proxy/proxy_parse.h"
@@ -9,6 +10,11 @@ namespace App
 		void FREE(void * block , size_t size)
 		{
 			delete block;
+		}
+
+		void CLOSE_SOCKET(s32 socketid)
+		{
+			closesocket(socketid);
 		}
 
 		void appExit(int d)
@@ -206,7 +212,7 @@ namespace App
 
 
 			/* Error handling */
-			if (size < 0) {
+			if (size <= 0) {
 				ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
 				return S_FAILED;
 			}
@@ -236,7 +242,7 @@ namespace App
 					msg->setSSLState(0);
 					return S_FAILED;
 				}
-				//closesocket(msg->getsocket_server_id());
+				//CLOSE_SOCKET(msg->getsocket_server_id());
 				msg->setSSLState(2);
 				return S_OK;
 			}
@@ -285,7 +291,7 @@ namespace App
 				}
 				else if (recvd == 0) //nothing to get from client so close down the socket
 				{
-					closesocket(msg->getsocket_server_id());
+					CLOSE_SOCKET(msg->getsocket_server_id());
 					msg->setsocket_server_id(-1);
 					FREE(request_message, maxbuff);
 					return S_FAILED;
@@ -332,6 +338,16 @@ namespace App
 					return S_FAILED;
 				}
 
+				if (msg->getServer()->isDenyURL(req->host))
+				{
+					CLOSE_SOCKET(msg->getsocket_server_id());
+					msg->setsocket_server_id(-1);
+					//CLOSE_SOCKET(msg->getsocket_id());
+					//msg->setsocket_id(-1);
+					FREE(request_message, maxbuff);
+					return S_FAILED;
+				}
+
 				if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
 					req->port = (char *) "80";
 
@@ -343,7 +359,7 @@ namespace App
 				if (msg->getsocket_server_id() == S_FAILED)
 				{
 					ParsedRequest_destroy(req);
-					//closesocket(newsockfd);   // close the sockets
+					//CLOSE_SOCKET(newsockfd);   // close the sockets
 					FREE(request_message, maxbuff);
 					return S_FAILED;
 				}
@@ -363,7 +379,7 @@ namespace App
 					//if (revSize <= 0)
 					//{
 					//	hr = sendBufferViaSocket(buf, revSize, msg->getsocket_client_id());
-					//	closesocket(msg->getsocket_server_id());
+					//	CLOSE_SOCKET(msg->getsocket_server_id());
 					//	msg->setsocket_server_id(-1);
 					//	return S_FAILED;
 					//	//HandleRequestConnectWithClient(msg, req);
@@ -373,7 +389,7 @@ namespace App
 						msg->setSSLState(1);
 						HandleRequestConnectWithClient(msg, req);
 					}
-					//closesocket(iServerfd);
+					//CLOSE_SOCKET(iServerfd);
 				}
 				else if (strcmp(req->method, "GET") == 0)
 				{
@@ -383,12 +399,23 @@ namespace App
 					hr = sendBufferViaSocket(browser_req, total_recieved_bits, msg->getsocket_server_id());
 					if (hr == S_OK)
 					{
+						bool have_rev = false;
 						do
 						{
 							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
 							if (hr == S_FAILED)
 								break;
+							else
+								have_rev = true;
 						} while (true);
+
+						if (have_rev == false)
+						{
+							CLOSE_SOCKET(msg->getsocket_server_id());
+							msg->setsocket_server_id(-1);
+							FREE(request_message, maxbuff);
+							return S_FAILED;
+						}
 					}
 
 					if (hr == S_FAILED)
@@ -410,7 +437,7 @@ namespace App
 
 						} while (true);
 					}
-					//closesocket(msg->getsocket_server_id());
+					//CLOSE_SOCKET(msg->getsocket_server_id());
 			}
 			FREE(request_message, maxbuff);
 			//  Doesn't make any sense ..as to send something
@@ -436,7 +463,7 @@ namespace App
 				}
 			    hr = datafromclient(ClientMsg);
 			} while (hr == S_OK);
-			closesocket(newsockfd);
+			CLOSE_SOCKET(newsockfd);
 		}
 
 #define DEF_CAPILITY 100
@@ -544,7 +571,7 @@ namespace App
 			struct sockaddr cli_addr;
 			for (u32 i = 0; i < numberClientMsg; i++)
 			{
-				_listClientMsg[i] = NEW(ClientMessage);
+				_listClientMsg[i] = new ClientMessage(this);
 				ClientMessage * p  = _listClientMsg[i];
 				p->setsocket_id(socketId);
 				p->startRequest([](void * data) -> u32
@@ -586,6 +613,72 @@ namespace App
 			}
 			return S_OK;
 
+		}
+
+		const std::vector<std::string> explode(const std::string& s, const char& c)
+		{
+			std::string buff{ "" };
+			std::vector<std::string> v;
+
+			for (auto n : s)
+			{
+				if (n != c) buff += n; else
+					if (n == c && buff != "") { v.push_back(buff); buff = ""; }
+			}
+			if (buff != "") v.push_back(buff);
+
+			return v;
+		}
+
+		void ProxyServer::onReadDenyListFromFile(const char * name)
+		{
+			u64 size = 0;
+			char * buffer;
+			FILE * fp = fopen(name , "rb");
+			if (!fp)
+			{
+				ERROR_OUT("[ProxyServer] cannot read file %s", name);
+				return;
+			}
+
+			// obtain file size:
+			fseek(fp, 0, SEEK_END);
+			size = ftell(fp);
+			rewind(fp);
+
+			// allocate memory to contain the whole file:
+			buffer = (char*)malloc(sizeof(char)*size);
+			if (buffer == NULL) { fputs("Memory error", stderr); exit(2); }
+
+			// copy the file into the buffer:
+			size_t result = fread(buffer, 1, size, fp);
+			if (result != size) { fputs("Reading error", stderr); exit(3); }
+
+			/* the whole file is now loaded in the memory buffer. */
+
+			// terminate
+			fclose(fp);
+			buffer[size] = '\0';
+			std::string str = buffer;
+
+			str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
+			denyList = explode(str, '\n');
+		}
+
+		bool ProxyServer::isDenyURL(const char * url)
+		{
+			if (denyList.size() <= 0)
+				return false;
+
+			for (auto it : denyList)
+			{
+				if (it == url)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 	}

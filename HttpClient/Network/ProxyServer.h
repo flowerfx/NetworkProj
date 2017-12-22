@@ -1,6 +1,7 @@
 #ifndef __PROXY_SERVER_H__
 #define __PROXY_SERVER_H__
 
+#include <vector>
 #include "NetworkMacros.h"
 #include "Core/Heap/Heap.h"
 namespace App
@@ -35,6 +36,9 @@ namespace App
 			u32 numberClientMsg;
 			ClientMessage * _listClientMsg[MAX_CLIENT];
 
+			//deny list;
+			std::vector<std::string> denyList;
+
 		public:
 			ProxyServer();
 			ProxyServer(u32 _port, IPv4 _ip);
@@ -48,6 +52,10 @@ namespace App
 			HRESULT onHandleRequestFromClient();
 
 			//
+			void onReadDenyListFromFile(const char * name);
+
+			//
+			bool isDenyURL(const char * url);
 		
 
 

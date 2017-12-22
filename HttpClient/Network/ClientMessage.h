@@ -6,6 +6,7 @@ namespace App
 {
 	namespace Network
 	{
+		class ProxyServer;
 		class ClientMessage : public App::Core
 		{
 			//handle the thread that its process
@@ -19,8 +20,10 @@ namespace App
 
 			//
 			u32		state_ssl;
+			//
+			ProxyServer * _server;
 		public:
-			ClientMessage();
+			ClientMessage(ProxyServer * server);
 			virtual ~ClientMessage();
 
 			void startRequest( std::function<u32(void *)>  fc);
@@ -28,7 +31,10 @@ namespace App
 
 			u32		getSSLState() {return state_ssl ;}
 			void	setSSLState(u32 s) { state_ssl = s; }
+
+			ProxyServer * getServer() {return _server;}
 		};
+
 	}
 }
 
