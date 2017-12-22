@@ -7,14 +7,6 @@ namespace App
 {
 	namespace Network
 	{
-		struct proxy_header
-		{
-			s32 server_socket_id;
-			s32 client_socket_id;
-			bool is_ssl;
-			proxy_header(s32 server_socket, s32 client_socket) : server_socket_id(server_socket) , client_socket_id(client_socket) , is_ssl(false){}
-		};
-
 		#define MAX_CLIENT 1600
 		class ClientMessage;
 		class ProxyServer : public Core

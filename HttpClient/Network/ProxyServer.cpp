@@ -129,9 +129,9 @@ namespace App
 #define MAX_BUF_SIZE  500000
 		HRESULT writeToClientViaServer(s32 Clientfd, s32 Serverfd);
 
-		void HandleRequestConnectWithClient(const proxy_header & proxy, struct ParsedRequest *req)
+		void HandleRequestConnectWithClient(ClientMessage * msg, struct ParsedRequest *req)
 		{
-			u32 revSize = 0;
+			s32 revSize = 0;
 			char buf[MAX_BUF_SIZE];
 			HRESULT hr;
 			
@@ -144,9 +144,12 @@ namespace App
 			do {
 				if (state == 0)
 				{
-					hr = sendBufferViaSocket(buff.c_str(), buff.size(), proxy.client_socket_id);
+					hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_client_id());
 					if (hr == S_FAILED)
 						continue;
+					/*hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_server_id());
+					if (hr == S_FAILED)
+						continue;*/
 					state = 1;
 					memset(buf, 0, sizeof buf);
 				}
@@ -155,7 +158,7 @@ namespace App
 				if (state == 1)
 				{
 					//receive SSL engryption from client
-					revSize = recv(proxy.client_socket_id, buf, MAX_BUF_SIZE, 0);
+					revSize = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 					if (revSize <= 0)
 						continue;
 					state = 2;
@@ -165,7 +168,7 @@ namespace App
 				if (state == 2)
 				{
 					//after receiving SSL from client, send its to server
-					hr = sendBufferViaSocket(buf, revSize, proxy.server_socket_id);
+					hr = sendBufferViaSocket(buf, revSize, msg->getsocket_server_id());
 					if (hr == S_FAILED)
 						continue;
 					state = 3;
@@ -174,7 +177,7 @@ namespace App
 				if (state == 3)
 				{
 					//after sending to server, wait respond from server and send its back to client
-					hr = writeToClientViaServer(proxy.client_socket_id, proxy.server_socket_id);
+					hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
 					if (hr == S_FAILED)
 						continue;
 					state = 4;
@@ -182,6 +185,7 @@ namespace App
 
 				if (state == 4)
 				{
+					memset(buf, 0, sizeof(buf));
 					break;
 				}
 			} while (true);
@@ -231,9 +235,14 @@ namespace App
 			if (msg->getSSLState() == 1)
 			{
 				s32 size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
-				if (size > 0){
+				if (size > 0) {
 					sendBufferViaSocket(buf, size, msg->getsocket_client_id());         // writing to client	    
 					memset(buf, 0, sizeof buf);
+				}
+				else
+				{
+					msg->setSSLState(0);
+					return S_FAILED;
 				}
 				//closesocket(msg->getsocket_server_id());
 				msg->setSSLState(2);
@@ -255,6 +264,11 @@ namespace App
 						hr = sendBufferViaSocket(buf, size, msg->getsocket_client_id());
 						memset(buf, 0, sizeof buf);
 					}
+					else
+					{
+						msg->setSSLState(0);
+						return S_FAILED;
+					}
 				}
 				msg->setSSLState(2);
 				return S_OK;
@@ -262,7 +276,7 @@ namespace App
 
 			while (strstr(request_message, "\r\n\r\n") == NULL) {  // determines end of request
 
-					u32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
+					s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 
 					if (recvd < 0) {
 						ERROR_OUT("[datafromclient] Error while receiving !");
@@ -318,10 +332,12 @@ namespace App
 				if (req->port == NULL)             // if port is not mentioned in URL, we take default as 80 
 					req->port = (char *) "80";
 
-
-				s32 iServerfd = createserverSocket(req->host, req->port);
-				msg->setsocket_server_id(iServerfd);
-				if (iServerfd == S_FAILED)
+				if (msg->getsocket_server_id() <= 0)
+				{
+					s32 iServerfd = createserverSocket(req->host, req->port);
+					msg->setsocket_server_id(iServerfd);
+				}
+				if (msg->getsocket_server_id() == S_FAILED)
 				{
 					ParsedRequest_destroy(req);
 					//closesocket(newsockfd);   // close the sockets
@@ -329,13 +345,31 @@ namespace App
 					return S_FAILED;
 				}
 
-				proxy_header proxy(msg->getsocket_server_id(), msg->getsocket_client_id());
-
 				if (strcmp(req->method, "CONNECT") == 0)
 				{
-					proxy.is_ssl = true;
-					msg->setSSLState(1);
-					HandleRequestConnectWithClient(proxy, req);
+					s32 revSize = -1;
+					do
+					{
+						hr = sendBufferViaSocket(request_message, total_recieved_bits, msg->getsocket_server_id());
+						if (hr == S_OK)
+						{
+							revSize = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
+							break;
+						}
+					} while (true);
+					if (revSize <= 0)
+					{
+						hr = sendBufferViaSocket(buf, revSize, msg->getsocket_client_id());
+						closesocket(msg->getsocket_server_id());
+						msg->setsocket_server_id(-1);
+						return S_FAILED;
+						//HandleRequestConnectWithClient(msg, req);
+					}
+					else
+					{
+						msg->setSSLState(1);
+						HandleRequestConnectWithClient(msg, req);
+					}
 					//closesocket(iServerfd);
 				}
 				else if (strcmp(req->method, "GET") == 0)
@@ -352,7 +386,7 @@ namespace App
 				else if (strcmp(req->method, "POST") == 0)
 				{
 					//char*  browser_req = convert_Request_to_string(req);
-					hr = sendBufferViaSocket(request_message, total_recieved_bits, proxy.server_socket_id);
+					hr = sendBufferViaSocket(request_message, total_recieved_bits, msg->getsocket_server_id());
 					if (hr == S_OK)
 					{
 						do
