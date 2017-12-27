@@ -72,6 +72,7 @@ namespace App
 	#define HRESULT App::s8
 	#define S_OK 0
 	#define S_FAILED -1
+	#define S_CLOSE 1
 }
 
 #endif // __DEFINE_MARCO_H__

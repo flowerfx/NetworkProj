@@ -83,7 +83,7 @@ namespace App
 
 		}
 
-		u32 createserverSocket(char *pcAddress, char *pcPort) {
+		u32 createserverSocket(char *pcAddress, char *pcPort, ParsedRequest *req) {
 			struct addrinfo ahints;
 			struct addrinfo *paRes;
 
@@ -91,7 +91,14 @@ namespace App
 
 			/* Get address information for stream socket on input port */
 			memset(&ahints, 0, sizeof(ahints));
-			ahints.ai_family = AF_UNSPEC;
+			if (strcmp(req->method, "CONNECT") == 0)
+			{
+				ahints.ai_family = AF_INET;
+			}
+			else
+			{
+				ahints.ai_family = AF_UNSPEC;
+			}
 			ahints.ai_socktype = SOCK_STREAM;
 			if (getaddrinfo(pcAddress, pcPort, &ahints, &paRes) != 0) {
 				ERROR_OUT("[createserverSocket] Error in server address format !");
@@ -140,7 +147,7 @@ namespace App
 #define MAX_BUF_SIZE  500000
 		HRESULT writeToClientViaServer(s32 Clientfd, s32 Serverfd);
 
-		void HandleRequestConnectWithClient(ClientMessage * msg, struct ParsedRequest *req)
+		HRESULT HandleRequestConnectWithClient(ClientMessage * msg, struct ParsedRequest *req)
 		{
 			s32 revSize = 0;
 			char buf[MAX_BUF_SIZE];
@@ -149,7 +156,7 @@ namespace App
 			std::string buff;
 			buff.append("HTTP/");
 			buff.append(req->version);
-			buff.append(" 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\r\n");
+			buff.append(" 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\Connection: close\r\n\r\n");
 					//buff.append(req->path);
 			u32 state = 0;
 			do {
@@ -157,45 +164,41 @@ namespace App
 				{
 					hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_client_id());
 					if (hr == S_FAILED)
-						continue;
+						return hr;
 					state = 1;
 					memset(buf, 0, sizeof buf);
 				}
 
-				//start handshake here
+				//rev data from client
 				if (state == 1)
 				{
-					//receive SSL engryption from client
 					revSize = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 					if (revSize <= 0)
-						continue;
+						return hr;
 					state = 2;
 				}
 				
-
+				//send to server
 				if (state == 2)
 				{
-					//after receiving SSL from client, send its to server
 					hr = sendBufferViaSocket(buf, revSize, msg->getsocket_server_id());
 					if (hr == S_FAILED)
-						continue;
+						return hr;
 					state = 3;
+					memset(buf, 0, sizeof(buf));
 				}
 
+				//receive from server and write to client
 				if (state == 3)
 				{
-					//after sending to server, wait respond from server and send its back to client
 					hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
-					if (hr == S_FAILED)
-						continue;
-					state = 4;
+					//if (hr == S_FAILED || hr == S_CLOSE)
+					//	return hr;
+
+
+					state = 1;
 				}
 
-				if (state == 4)
-				{
-					memset(buf, 0, sizeof(buf));
-					break;
-				}
 			} while (true);
 		}
 
@@ -212,11 +215,11 @@ namespace App
 
 
 			/* Error handling */
-			if (size <= 0) {
-				ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
-				return S_FAILED;
+			if (size == 0) {
+				ERROR_OUT(" [writeToClientViaServer] Yo..!! socket with server has close ! \n");
+				return S_CLOSE;
 			}
-
+			ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
 			return S_FAILED;
 		}
 
@@ -240,6 +243,8 @@ namespace App
 				else
 				{
 					msg->setSSLState(0);
+					CLOSE_SOCKET(msg->getsocket_server_id());
+					msg->setsocket_client_id(-1);
 					return S_FAILED;
 				}
 				//CLOSE_SOCKET(msg->getsocket_server_id());
@@ -353,7 +358,7 @@ namespace App
 
 				if (msg->getsocket_server_id() <= 0)
 				{
-					s32 iServerfd = createserverSocket(req->host, req->port);
+					s32 iServerfd = createserverSocket(req->host, req->port , req);
 					msg->setsocket_server_id(iServerfd);
 				}
 				if (msg->getsocket_server_id() == S_FAILED)
@@ -365,31 +370,25 @@ namespace App
 				}
 
 				if (strcmp(req->method, "CONNECT") == 0)
-				{
-					s32 revSize = -1;
-					/*do
+				{				
+					msg->setSSLState(0);
+					hr = HandleRequestConnectWithClient(msg, req);
+					if (hr == S_FAILED)
 					{
-						hr = sendBufferViaSocket(request_message, total_recieved_bits, msg->getsocket_server_id());
-						if (hr == S_OK)
-						{
-							revSize = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
-							break;
-						}
-					} while (true);*/
-					//if (revSize <= 0)
-					//{
-					//	hr = sendBufferViaSocket(buf, revSize, msg->getsocket_client_id());
-					//	CLOSE_SOCKET(msg->getsocket_server_id());
-					//	msg->setsocket_server_id(-1);
-					//	return S_FAILED;
-					//	//HandleRequestConnectWithClient(msg, req);
-					//}
-					//else
-					{
-						msg->setSSLState(1);
-						HandleRequestConnectWithClient(msg, req);
+						CLOSE_SOCKET(msg->getsocket_server_id());
+						msg->setsocket_server_id(-1);
+						FREE(request_message, maxbuff);
+						return S_FAILED;
 					}
-					//CLOSE_SOCKET(iServerfd);
+					//else if (hr == S_CLOSE)
+					//{
+					//	//s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
+					//	//CLOSE_SOCKET(msg->getsocket_server_id());
+					//	//msg->setsocket_server_id(-1);
+
+					//	FREE(request_message, maxbuff);
+					//	return S_OK;
+					//}
 				}
 				else if (strcmp(req->method, "GET") == 0)
 				{
@@ -403,7 +402,7 @@ namespace App
 						do
 						{
 							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
-							if (hr == S_FAILED)
+							if (hr == S_FAILED || hr == S_CLOSE)
 								break;
 							else
 								have_rev = true;
@@ -432,7 +431,7 @@ namespace App
 						do
 						{
 							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
-							if (hr == S_FAILED)
+							if (hr == S_FAILED || hr == S_CLOSE)
 								break;
 
 						} while (true);
