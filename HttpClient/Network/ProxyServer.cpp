@@ -14,6 +14,8 @@ namespace App
 
 		void CLOSE_SOCKET(s32 socketid)
 		{
+			if (socketid < 0)
+				return;
 			closesocket(socketid);
 		}
 
@@ -145,23 +147,47 @@ namespace App
 		}
 
 #define MAX_BUF_SIZE  500000
-		HRESULT writeToClientViaServer(s32 Clientfd, s32 Serverfd);
+
+		HRESULT writeToClientViaServer(int Clientfd, int Serverfd) {
+
+			s32 size;
+			char buf[MAX_BUF_SIZE];
+
+			while ((size = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
+				sendBufferViaSocket(buf, size, Clientfd);         // writing to client	
+				buf[size] = '\0';
+				PRINT_OUT("[REV] size : %d , data: %s", size, buf);
+				memset(buf, 0, sizeof buf);
+				return S_OK;
+			}
+
+
+			/* Error handling */
+			if (size == 0) {
+				PRINT_OUT(" recv failed: %d\n", WSAGetLastError());
+				ERROR_OUT(" [writeToClientViaServer] Yo..!! socket with server has close ! \n");
+				return S_CLOSE;
+			}
+			ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
+			return S_FAILED;
+		}
 
 		HRESULT HandleRequestConnectWithClient(ClientMessage * msg, struct ParsedRequest *req)
 		{
 			s32 revSize = 0;
 			char buf[MAX_BUF_SIZE];
 			HRESULT hr;
-			
+			u32 count = 0;
 			std::string buff;
 			buff.append("HTTP/");
 			buff.append(req->version);
 			buff.append(" 200 Connection established\r\nProxy-Agent: Mentalis Proxy Server\r\n\Connection: close\r\n\r\n");
-					//buff.append(req->path);
+			//buff.append(req->path);
 			u32 state = 0;
 			do {
 				if (state == 0)
 				{
+					PRINT_OUT("[Connect] state 0 : send Connection established to client ");
 					hr = sendBufferViaSocket(buff.c_str(), buff.size(), msg->getsocket_client_id());
 					if (hr == S_FAILED)
 						return hr;
@@ -172,15 +198,20 @@ namespace App
 				//rev data from client
 				if (state == 1)
 				{
+					PRINT_OUT("[Connect] state 1 : receive data from client");
 					revSize = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 					if (revSize <= 0)
+					{
+						PRINT_OUT("recv failed: %d\n", WSAGetLastError());
 						return hr;
+					}
 					state = 2;
 				}
-				
+
 				//send to server
 				if (state == 2)
 				{
+					PRINT_OUT("[Connect] state 2: send data receive to server");
 					hr = sendBufferViaSocket(buf, revSize, msg->getsocket_server_id());
 					if (hr == S_FAILED)
 						return hr;
@@ -191,9 +222,24 @@ namespace App
 				//receive from server and write to client
 				if (state == 3)
 				{
-					hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
-					//if (hr == S_FAILED || hr == S_CLOSE)
-					//	return hr;
+					do {
+						PRINT_OUT("[Connect] state 3: rev data from server and send to client");
+						hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
+						if (hr == S_CLOSE)
+						{
+							count++;
+							if (count >= 2)
+								return hr;
+							PRINT_OUT("[Connect][CLOSE] state 3: dont receive any thing from server , break !");
+							break;
+						}
+						else if (hr == S_FAILED)
+						{
+							PRINT_OUT("[Connect][ERROR] state 3: have error with socket server , return !");
+							return hr;
+						}
+
+					} while (true);
 
 
 					state = 1;
@@ -202,80 +248,12 @@ namespace App
 			} while (true);
 		}
 
-		HRESULT writeToClientViaServer(int Clientfd, int Serverfd) {
-
-			s32 size;
-			char buf[MAX_BUF_SIZE];
-
-			while ((size = recv(Serverfd, buf, MAX_BUF_SIZE, 0)) > 0) {
-				sendBufferViaSocket(buf, size, Clientfd);         // writing to client	    
-				memset(buf, 0, sizeof buf);
-				return S_OK;
-			}
-
-
-			/* Error handling */
-			if (size == 0) {
-				ERROR_OUT(" [writeToClientViaServer] Yo..!! socket with server has close ! \n");
-				return S_CLOSE;
-			}
-			ERROR_OUT(" [writeToClientViaServer] Yo..!! Error while recieving from server ! \n");
-			return S_FAILED;
-		}
-
-
-
-		HRESULT datafromclient(ClientMessage * msg)
+		HRESULT datafromclient(s32 socket , ClientMessage * msg)
 		{
 			int maxbuff = MAX_BUF_SIZE;
 			char buf[MAX_BUF_SIZE];
-
-		
 			u32 total_recieved_bits = 0;
 			HRESULT hr;
-			if (msg->getSSLState() == 1)
-			{
-				s32 size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
-				if (size > 0) {
-					sendBufferViaSocket(buf, size, msg->getsocket_client_id());         // writing to client	    
-					memset(buf, 0, sizeof(buf));
-				}
-				else
-				{
-					msg->setSSLState(0);
-					CLOSE_SOCKET(msg->getsocket_server_id());
-					msg->setsocket_client_id(-1);
-					return S_FAILED;
-				}
-				//CLOSE_SOCKET(msg->getsocket_server_id());
-				msg->setSSLState(2);
-				return S_OK;
-			}
-			else if (msg->getSSLState() == 2)
-			{
-				u32 size = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
-				if (size > 0)
-				{
-					hr = sendBufferViaSocket(buf, size, msg->getsocket_server_id());
-					memset(buf, 0, sizeof buf);
-				}
-				if (hr == S_OK)
-				{
-					size = recv(msg->getsocket_server_id(), buf, MAX_BUF_SIZE, 0);
-					if (size > 0)
-					{
-						hr = sendBufferViaSocket(buf, size, msg->getsocket_client_id());
-						memset(buf, 0, sizeof buf);
-					}
-					else
-					{
-						msg->setSSLState(0);
-						return S_FAILED;
-					}
-				}
-				msg->setSSLState(2);
-				return S_OK;
-			}
 
 			char *request_message;  // Get message from URL
 			request_message = (char *)malloc(maxbuff);
@@ -289,6 +267,7 @@ namespace App
 				s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
 
 				if (recvd < 0) {
+					PRINT_OUT("recv failed: %d\n", WSAGetLastError());
 					ERROR_OUT("[datafromclient] Error while receiving !");
 					FREE(request_message, maxbuff);
 					return S_FAILED;
@@ -380,15 +359,13 @@ namespace App
 						FREE(request_message, maxbuff);
 						return S_FAILED;
 					}
-					//else if (hr == S_CLOSE)
-					//{
-					//	//s32 recvd = recv(msg->getsocket_client_id(), buf, MAX_BUF_SIZE, 0);
-					//	//CLOSE_SOCKET(msg->getsocket_server_id());
-					//	//msg->setsocket_server_id(-1);
-
-					//	FREE(request_message, maxbuff);
-					//	return S_OK;
-					//}
+					else if (hr == S_CLOSE)
+					{
+						CLOSE_SOCKET(msg->getsocket_server_id());
+						msg->setsocket_server_id(-1);
+						FREE(request_message, maxbuff);
+						return S_FAILED;
+					}
 				}
 				else if (strcmp(req->method, "GET") == 0)
 				{
@@ -432,7 +409,11 @@ namespace App
 						{
 							hr = writeToClientViaServer(msg->getsocket_client_id(), msg->getsocket_server_id());
 							if (hr == S_FAILED || hr == S_CLOSE)
+							{
+								CLOSE_SOCKET(msg->getsocket_server_id());
+								msg->setsocket_server_id(-1);
 								break;
+							}
 
 						} while (true);
 					}
@@ -443,10 +424,11 @@ namespace App
 			return S_OK;
 
 		}
-		struct sockaddr cli_addr;
+	
 		void handleRequestThread(int sockfd, ClientMessage * ClientMsg )
 		{
 			/* A browser request starts here */
+			struct sockaddr cli_addr;
 			int clilen = sizeof(struct sockaddr);
 			int newsockfd = -1;
 			HRESULT hr = S_OK;
@@ -460,9 +442,10 @@ namespace App
 						return;
 					}
 				}
-			    hr = datafromclient(ClientMsg);
+			    hr = datafromclient(sockfd, ClientMsg);
 			} while (hr == S_OK);
 			CLOSE_SOCKET(newsockfd);
+			//WSACleanup();
 		}
 
 #define DEF_CAPILITY 100
@@ -566,7 +549,7 @@ namespace App
 			listen(socketId, maxCapility);  // can have maximum of 100 browser requests
 
 			//create
-			numberClientMsg = 1;
+			numberClientMsg = 100;
 			struct sockaddr cli_addr;
 			for (u32 i = 0; i < numberClientMsg; i++)
 			{
