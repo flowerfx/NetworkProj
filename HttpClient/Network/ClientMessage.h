@@ -20,6 +20,8 @@ namespace App
 
 			//
 			u32		state_ssl;
+			SYNC_VALUE(socket_client_id_ssl, s32);
+			SYNC_VALUE(socket_server_id_ssl, s32);
 			//
 			ProxyServer * _server;
 		public:

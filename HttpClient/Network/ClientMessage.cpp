@@ -10,7 +10,9 @@ namespace App
 			_func(nullptr),
 			_thread(nullptr),
 			_server(server),
-			state_ssl(0)
+			state_ssl(0),
+			socket_client_id_ssl(-1),
+			socket_server_id_ssl(-1)
 		{
 
 		}
