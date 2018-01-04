@@ -91,6 +91,28 @@ namespace App
 			u32       sin6_flowinfo; /* IPv6 flow information    */
 			struct in6_addr  sin6_addr;     /* IPv6 address             */
 		};
+
+		enum CONNECTION_TYPE
+		{
+			KEEP_ALIVE = 0,
+			CLOSE
+		};
+
+		struct AnalyticBuffer
+		{
+			std::string httpType;
+			std::string httpVersion;
+			u32			httpCode;
+
+			std::string contentType;
+
+			u64		    sizeCharacter;
+
+			CONNECTION_TYPE connectionType;
+
+			std::string body;
+
+		};
 	}
 }
 

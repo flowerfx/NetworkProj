@@ -12,15 +12,20 @@ namespace App
 			_server(server),
 			state_ssl(0),
 			socket_client_id_ssl(-1),
-			socket_server_id_ssl(-1)
-		{
+			socket_server_id_ssl(-1),
+			_parent(nullptr)
 
+		{
+			_childs.clear();
 		}
 
 		ClientMessage::~ClientMessage()
 		{
 			DELETE(_thread);
 			_func = nullptr;
+			_parent = nullptr;
+
+			deleteAllChild();
 		}
 
 

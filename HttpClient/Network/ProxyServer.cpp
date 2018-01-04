@@ -13,11 +13,38 @@ namespace App
 			delete block;
 		}
 
-		void CLOSE_SOCKET(s32 socketid)
+		void CLOSE_SOCKET(s32 socketid, ClientMessage * msg = nullptr)
 		{
 			if (socketid < 0)
 				return;
+
+			if (msg)
+			{
+				if (msg->getsocket_client_id() == socketid)
+				{
+					msg->setsocket_client_id(-1);
+				}
+				else if (msg->getsocket_client_id_ssl() == socketid)
+				{
+					msg->setsocket_client_id_ssl(-1);
+				}
+				else if (msg->getsocket_server_id() == socketid)
+				{
+					msg->setsocket_server_id(-1);
+				}
+				else if (msg->getsocket_server_id_ssl() == socketid)
+				{
+					msg->setsocket_server_id_ssl(-1);
+				}
+			}
+
+			if (msg && msg->getParent() != nullptr)
+			{
+				//return;
+			}
+
 			closesocket(socketid);
+			
 		}
 
 		void appExit(int d)
@@ -150,25 +177,72 @@ namespace App
 
 #define MAX_BUF_SIZE  500000
 
-		const char * HandleBufferFromServer(std::string & str, char * buffer, s32 & size)
+		HRESULT HandleBufferFromServer(AnalyticBuffer * ana, char * buffer, s32 size)
 		{
 			if (size <= 0 || buffer == 0)
-				return buffer;
+				return S_FAILED;
 
 			if (size < 4)
-				return buffer;
+				return S_FAILED;
 
 			if (!(buffer[0] == 'H' && buffer[1] == 'T' && buffer[2] == 'T' && buffer[3] == 'P'))
-				return buffer;
+				return S_FAILED;
 
-			std::size_t found = str.find_first_of("<!");
-			if (found == std::string::npos)
-				return buffer;
+			std::string str(buffer, size);
+			std::size_t found = 0;
+			std::size_t found_next = 0;
+			found = str.find("/");
+			ana->httpType = str.substr(0, found);
+			found++;
+			found_next = str.find(" ", found);
+			ana->httpVersion = str.substr(found, found_next - found);
+			found = found_next;
+			found++;
+			found_next = str.find(" ", found);
+			ana->httpCode = atoi((str.substr(found, found_next - found)).c_str());
+			found = found_next;
+			found++;
 
-			str.erase(0, found - 1);
-			size = str.size();
-			return str.c_str();
+			found_next = str.find("\r\n", found);
+			found = found_next;
+			found_next = str.find("Content-Type:", found);
+			found = found_next;
+			found_next = str.find(" ", found);
+			found = found_next;
+			found++;
+			found_next = str.find("\r\n", found);
+			ana->contentType = str.substr(found, found_next - found);
+			found = found_next;
+			found_next = str.find("Content-Length:", found);
+			found = found_next;
+			found_next = str.find(" ", found);
+			found = found_next;
+			found++;
+			found_next = str.find("\r\n", found);
+			ana->sizeCharacter = _atoi64((str.substr(found, found_next - found)).c_str());
+			found = found_next;
+			found_next = str.find("Connection:", found);
+			found = found_next;
+			found_next = str.find(" ", found);
+			found = found_next;
+			found++;
+			found_next = str.find("\r\n", found);
+			std::string str_type_connection = str.substr(found, found_next - found);
+			if (str_type_connection == "Close")
+			{
+				ana->connectionType = CLOSE;
+			}
+			else
+			{
+				ana->connectionType = KEEP_ALIVE;
+			}
+			found = found_next;
+			found_next = str.find("\r\n", found);
+			found = found_next;
+			found++;
+			ana->body = str.substr(found, found_next - found);
 
+			return S_OK;
 		}
 
 		HRESULT writeToClientViaServer(int Clientfd, int Serverfd) {
@@ -354,6 +428,8 @@ namespace App
 						handleRequestThread(client->getsocket_id(), client);
 						return 1;
 					});
+
+					msg->addChild(p);
 				}
 
 				msg->setSSLState(2);
@@ -361,7 +437,17 @@ namespace App
 			}
 			else if (msg->getSSLState() == 2)
 			{
+
+				msg->onCheckCLientMsg();
+
 				return S_OK;
+			}
+			else if (msg->getSSLState() == 3)
+			{
+				msg->setSSLState(0);
+				CLOSE_SOCKET(msg->getsocket_server_id_ssl(), msg);
+				msg->deleteAllChild();
+				return S_FAILED;
 			}
 
 
@@ -390,8 +476,7 @@ namespace App
 				}
 				else if (recvd == 0) //nothing to get from client so close down the socket
 				{
-					CLOSE_SOCKET(msg->getsocket_server_id());
-					msg->setsocket_server_id(-1);
+					CLOSE_SOCKET(msg->getsocket_server_id() , msg);
 					FREE(request_message, maxbuff);
 					return S_FAILED;
 				}
@@ -439,10 +524,7 @@ namespace App
 
 				if (msg->getServer()->isDenyURL(req->host))
 				{
-					CLOSE_SOCKET(msg->getsocket_server_id());
-					msg->setsocket_server_id(-1);
-					//CLOSE_SOCKET(msg->getsocket_id());
-					//msg->setsocket_id(-1);
+					CLOSE_SOCKET(msg->getsocket_server_id() , msg);
 					FREE(request_message, maxbuff);
 					return S_FAILED;
 				}
@@ -458,7 +540,6 @@ namespace App
 				if (msg->getsocket_server_id() == S_FAILED)
 				{
 					ParsedRequest_destroy(req);
-					//CLOSE_SOCKET(newsockfd);   // close the sockets
 					FREE(request_message, maxbuff);
 					return S_FAILED;
 				}
@@ -470,8 +551,7 @@ namespace App
 					hr = HandleRequestConnectWithClient(msg, req);
 					if (hr == S_FAILED)
 					{
-						CLOSE_SOCKET(msg->getsocket_server_id());
-						msg->setsocket_server_id(-1);
+						CLOSE_SOCKET(msg->getsocket_server_id(), msg);
 						FREE(request_message, maxbuff);
 						return S_FAILED;
 					}
@@ -505,8 +585,7 @@ namespace App
 
 						if (have_rev == false)
 						{
-							CLOSE_SOCKET(msg->getsocket_server_id());
-							msg->setsocket_server_id(-1);
+							CLOSE_SOCKET(msg->getsocket_server_id() , msg);
 							FREE(request_message, maxbuff);
 							return S_FAILED;
 						}
@@ -519,7 +598,6 @@ namespace App
 				}
 				else if (strcmp(req->method, "POST") == 0)
 				{
-					//char*  browser_req = convert_Request_to_string(req);
 					hr = sendBufferViaSocket(request_message, total_recieved_bits, msg->getsocket_server_id());
 					if (hr == S_OK)
 					{
@@ -547,27 +625,39 @@ namespace App
 								}
 							} while (true);
 
+							AnalyticBuffer ana;
+							HRESULT hr_buff;
 							if (size > 0)
 							{
 								buffer[size] = '\0';
 								PRINT_OUT("[REV] size : %d , data: %s", size, buffer);
 
-								//std::string str(buffer, size);
+								hr_buff = HandleBufferFromServer(&ana , buffer, size);
 
-								//const char * buff = HandleBufferFromServer(str, buffer, size);
 								sendBufferViaSocket(buffer, size, msg->getsocket_client_id());         // writing to client	
 								memset(buffer, 0, sizeof(buffer));
 							}	
 							else 
 							{
-								CLOSE_SOCKET(msg->getsocket_server_id());
-								msg->setsocket_server_id(-1);
+								CLOSE_SOCKET(msg->getsocket_server_id(), msg);
+								if (hr_buff == S_OK)
+								{
+									if (ana.connectionType == CLOSE)
+									{
+										FREE(request_message, maxbuff);
+										if (msg->getParent())
+										{
+											msg->getParent()->setSSLState(3);
+										}
+										return S_FAILED;
+									}
+								}
+
 								break;
 							}
 
 						} while (true);
 					}
-					//CLOSE_SOCKET(msg->getsocket_server_id());
 			}
 			FREE(request_message, maxbuff);
 			//  Doesn't make any sense ..as to send something
@@ -594,7 +684,7 @@ namespace App
 				}
 			    hr = datafromclient(sockfd, ClientMsg);
 			} while (hr == S_OK);
-			CLOSE_SOCKET(newsockfd);
+			CLOSE_SOCKET(newsockfd, ClientMsg);
 		}
 
 #define DEF_CAPILITY 100

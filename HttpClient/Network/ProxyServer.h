@@ -8,11 +8,6 @@ namespace App
 {
 	namespace Network
 	{
-		enum class CONNECTION_TYPE
-		{
-			KEEP_ALIVE = 0,
-			CLOSE
-		};
 
 		#define MAX_CLIENT 1600
 		class ClientMessage;
